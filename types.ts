@@ -19,12 +19,21 @@ export type PaginatedResponse<T> = {
   };
 };
 
+export type ReportStatus = "PUBLISHED" | "DRAFT";
+
 export type Report = {
   id: string;
   image: string;
   description: string;
   latitude: number;
   longitude: number;
+  title: string;
+  pollution_score: number;
+  rating: number;
+  status: ReportStatus;
+  created_at: string;
+  ai_summary: string;
+  privacy: "PUBLIC" | "ONLY_ME";
 };
 
 export type CreateReportForm = {
