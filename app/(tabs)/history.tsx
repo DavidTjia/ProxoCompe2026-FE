@@ -1,126 +1,119 @@
-import { Image } from "expo-image";
-import { Platform, StyleSheet } from "react-native";
-
-import { ExternalLink } from "@/components/external-link";
-import ParallaxScrollView from "@/components/parallax-scroll-view";
+import { ReportHistoryCard } from "@/components/report-history-card";
+import { ReportSummaryCard } from "@/components/report-summary-card";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { Collapsible } from "@/components/ui/collapsible";
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Fonts } from "@/constants/theme";
+import { Report } from "@/types";
+import { router } from "expo-router";
+import React, { useMemo } from "react";
+import { ScrollView, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// TODO: Replace with real data from API (useInfiniteReports)
+const MOCK_REPORTS: Report[] = [
+  {
+    id: "1",
+    image: "https://images.unsplash.com/photo-1526749837599-b4eba9fd855e?w=400",
+    title: "Heavy Smog Detected",
+    description: "Heavy smog detected near main road",
+    latitude: -6.2,
+    longitude: 106.8,
+    pollution_score: 7.6,
+    rating: 4.5,
+    status: "PUBLISHED",
+    created_at: "2023-10-24T10:45:00Z",
+    ai_summary: "Heavy smog detected in the area.",
+    privacy: "PUBLIC",
+  },
+  {
+    id: "2",
+    image: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=400",
+    title: "Vehicle Emissions",
+    description: "High vehicle emissions at intersection",
+    latitude: -6.2,
+    longitude: 106.8,
+    pollution_score: 6.0,
+    rating: 4.5,
+    status: "PUBLISHED",
+    created_at: "2023-10-15T08:30:00Z",
+    ai_summary: "Vehicle emission levels above normal.",
+    privacy: "PUBLIC",
+  },
+  {
+    id: "3",
+    image: "https://images.unsplash.com/photo-1493673272479-a20888bcee10?w=400",
+    title: "Open Waste Burning",
+    description: "Open waste burning near residential area",
+    latitude: -6.2,
+    longitude: 106.8,
+    pollution_score: 8.2,
+    rating: 0,
+    status: "DRAFT",
+    created_at: "2023-10-12T18:00:00Z",
+    ai_summary: "Open waste burning detected.",
+    privacy: "ONLY_ME",
+  },
+];
 
 export default function HistoryScreen() {
+  const insets = useSafeAreaInsets();
+
+  const totalReports = MOCK_REPORTS.length;
+
+  const averageScore = useMemo(() => {
+    if (MOCK_REPORTS.length === 0) return 0;
+    const sum = MOCK_REPORTS.reduce((acc, r) => acc + r.pollution_score, 0);
+    return sum / MOCK_REPORTS.length;
+  }, []);
+
+  const handleDetailsPress = (report: Report) => {
+    // TODO: Navigate to report detail screen
+    // router.push({ pathname: "/report/[id]", params: { id: report.id } });
+    console.log("Navigate to report details:", report.id);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#D0D0D0", dark: "#353636" }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}
-        >
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>
-        This app includes example code to help you get started.
+    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Header */}
+      <ThemedText type="title" style={styles.header}>
+        Report History
       </ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{" "}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText>{" "}
-          and{" "}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in{" "}
-          <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{" "}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the
-          web version, press <ThemedText type="defaultSemiBold">w</ThemedText>{" "}
-          in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the{" "}
-          <ThemedText type="defaultSemiBold">@2x</ThemedText> and{" "}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to
-          provide files for different screen densities
-        </ThemedText>
-        <Image
-          source={require("@/assets/images/react-logo.png")}
-          style={{ width: 100, height: 100, alignSelf: "center" }}
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Summary stats */}
+        <ReportSummaryCard
+          totalReports={totalReports}
+          averageScore={averageScore}
         />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{" "}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook
-          lets you inspect what the user&apos;s current color scheme is, and so
-          you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{" "}
-          <ThemedText type="defaultSemiBold">
-            components/HelloWave.tsx
-          </ThemedText>{" "}
-          component uses the powerful{" "}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{" "}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The{" "}
-              <ThemedText type="defaultSemiBold">
-                components/ParallaxScrollView.tsx
-              </ThemedText>{" "}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+
+        {/* Report cards */}
+        {MOCK_REPORTS.map((report) => (
+          <ReportHistoryCard
+            key={report.id}
+            report={report}
+            onDetailsPress={handleDetailsPress}
+          />
+        ))}
+      </ScrollView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: "#808080",
-    bottom: -90,
-    left: -35,
-    position: "absolute",
+  container: {
+    flex: 1,
   },
-  titleContainer: {
-    flexDirection: "row",
-    gap: 8,
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 8,
+    fontStyle: "italic",
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 32,
+    gap: 12,
   },
 });
