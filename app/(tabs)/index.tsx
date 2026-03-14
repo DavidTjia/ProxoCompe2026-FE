@@ -12,6 +12,7 @@ import { Report } from "@/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import React from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -69,6 +70,26 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const totalReports = 14; // TODO: fetch from API
 
+  function handleCardPress(report: Report) {
+    router.push({
+      pathname: "/report-detail",
+      params: {
+        id: report.id,
+        image: report.image,
+        title: report.title,
+        description: report.description,
+        pollution_score: String(report.pollution_score),
+        rating: String(report.rating),
+        location_name: report.location_name ?? "",
+        severity: report.severity ?? "LOW",
+        ai_summary: report.ai_summary,
+        created_at: report.created_at,
+        latitude: String(report.latitude),
+        longitude: String(report.longitude),
+      },
+    });
+  }
+
   return (
     <ThemedView style={styles.container}>
       <ScrollView
@@ -92,14 +113,6 @@ export default function HomeScreen() {
             <View style={styles.greetingBubble}>
               <ThemedText style={styles.greetingText}>Hello, User</ThemedText>
             </View>
-            <View style={{ flex: 1 }} />
-            <Pressable>
-              <MaterialIcons
-                name="more-vert"
-                size={22}
-                color="rgba(255,255,255,0.7)"
-              />
-            </Pressable>
           </View>
 
           {/* Report count card */}
@@ -140,6 +153,7 @@ export default function HomeScreen() {
             <CommunityFeedCard
               key={report.id}
               report={report}
+              onCardPress={handleCardPress}
               onCommentPress={(r) =>
                 console.log("Comment on:", r.id)
               }

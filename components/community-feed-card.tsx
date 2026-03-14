@@ -9,6 +9,7 @@ import { ThemedText } from "./themed-text";
 
 type Props = {
   report: Report;
+  onCardPress?: (report: Report) => void;
   onCommentPress?: (report: Report) => void;
   onReportPress?: (report: Report) => void;
 };
@@ -33,6 +34,7 @@ const SEVERITY_CONFIG = {
 
 export function CommunityFeedCard({
   report,
+  onCardPress,
   onCommentPress,
   onReportPress,
 }: Props) {
@@ -40,7 +42,7 @@ export function CommunityFeedCard({
   const config = SEVERITY_CONFIG[severity];
 
   return (
-    <View style={styles.card}>
+    <Pressable style={styles.card} onPress={() => onCardPress?.(report)}>
       {/* Image with overlay */}
       <View style={styles.imageContainer}>
         <Image
@@ -121,7 +123,7 @@ export function CommunityFeedCard({
           </ThemedText>
         </Pressable>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

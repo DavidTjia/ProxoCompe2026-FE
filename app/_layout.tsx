@@ -52,6 +52,13 @@ export default function RootLayout() {
                 name="(new-report)"
                 options={{ headerShown: false }}
               />
+              <Stack.Screen
+                name="report-detail"
+                options={{
+                  headerShown: false,
+                  presentation: "modal",
+                }}
+              />
             </Stack>
             <StatusBar style="auto" />
           </ThemeProvider>

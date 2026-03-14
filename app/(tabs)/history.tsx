@@ -66,9 +66,23 @@ export default function HistoryScreen() {
   }, []);
 
   const handleDetailsPress = (report: Report) => {
-    // TODO: Navigate to report detail screen
-    // router.push({ pathname: "/report/[id]", params: { id: report.id } });
-    console.log("Navigate to report details:", report.id);
+    router.push({
+      pathname: "/report-detail",
+      params: {
+        id: report.id,
+        image: report.image,
+        title: report.title,
+        description: report.description,
+        pollution_score: String(report.pollution_score),
+        rating: String(report.rating),
+        location_name: report.location_name ?? "",
+        severity: report.severity ?? "LOW",
+        ai_summary: report.ai_summary,
+        created_at: report.created_at,
+        latitude: String(report.latitude),
+        longitude: String(report.longitude),
+      },
+    });
   };
 
   return (
