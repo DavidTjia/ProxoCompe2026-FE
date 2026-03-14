@@ -9,7 +9,7 @@ const AppScreen = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.replace("/(tabs)");
+      router.replace("/(auth)/signin");
     }, 2000);
 
     return () => clearTimeout(timer);

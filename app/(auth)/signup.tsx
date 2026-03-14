@@ -3,6 +3,7 @@ import Checkbox from "expo-checkbox";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -15,7 +16,7 @@ import {
 export default function SignupScreen() {
   const router = useRouter();
 
-  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -24,6 +25,55 @@ export default function SignupScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [agree, setAgree] = useState(false);
+
+  const handleSignup = async () => {
+    if (!username || !email || !password || !confirmPassword) {
+      Alert.alert("Error", "Please fill all fields");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Password does not match");
+      return;
+    }
+
+    if (!agree) {
+      Alert.alert("Error", "You must agree to Terms");
+      return;
+    }
+    console.log("Signing up with:", { username, email, password });
+
+    try {
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_API_URL}/items/users`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.EXPO_PUBLIC_BASE_API_KEY}`,
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+            username: username,
+          }),
+        },
+      );
+
+      const data = await res.json();
+
+      if (res.status === 200 || res.status === 201) {
+        Alert.alert("Success", "Account created successfully");
+
+        router.replace("/(auth)/signin");
+      } else {
+        Alert.alert("Signup Failed", data?.errors?.[0]?.message || "Error");
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Error", "Cannot connect to server");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -39,13 +89,13 @@ export default function SignupScreen() {
           <Text style={styles.mainTitle}>Create Account</Text>
 
           {/* Full Name */}
-          <Text style={styles.label}>Full Name</Text>
+          <Text style={styles.label}>Username</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter your full name"
+            placeholder="Enter your username"
             placeholderTextColor="#8FA897"
-            value={fullName}
-            onChangeText={setFullName}
+            value={username}
+            onChangeText={setUsername}
           />
 
           {/* Email */}
@@ -121,7 +171,7 @@ export default function SignupScreen() {
           </View>
 
           {/* Button */}
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity style={styles.button} onPress={handleSignup}>
             <Text style={styles.buttonText}>Sign Up</Text>
           </TouchableOpacity>
 
