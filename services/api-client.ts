@@ -1,7 +1,5 @@
 import axios from "axios";
 
-console.log("base url", process.env.EXPO_PUBLIC_BASE_API_URL);
-
 const apiClient = axios.create({
   baseURL: `${process.env.EXPO_PUBLIC_BASE_API_URL}`,
   timeout: 10000,

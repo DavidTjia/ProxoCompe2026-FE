@@ -4,18 +4,24 @@ import {
   CreateUserInput,
   PaginatedResponse,
   PaginationParams,
+  Report,
+  ReportStatsParams,
   User,
 } from "@/types";
 import apiClient from "../api-client";
 
 const reportApi = {
   getReports: (params?: PaginationParams) =>
-    apiClient.get<PaginatedResponse<User>>("/reports", { params }),
+    apiClient.get<PaginatedResponse<Report>>("items/reports", { params }),
 
-  getUser: (id: string) => apiClient.get<ApiResponse<User>>(`/users/${id}`),
+  getReportStats: (params?: ReportStatsParams) =>
+    apiClient.get<ApiResponse<{ avg: { pollution_score: string } }[]>>(
+      "items/reports",
+      { params },
+    ),
 
   createReports: (data: CreateReportForm) =>
-    apiClient.post<ApiResponse<User>>("items/reports", data),
+    apiClient.post<ApiResponse<Report>>("items/reports", data),
 
   updateUser: (id: string, data: Partial<CreateUserInput>) =>
     apiClient.put<ApiResponse<User>>(`/users/${id}`, data),
