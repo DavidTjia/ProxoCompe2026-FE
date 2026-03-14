@@ -7,7 +7,7 @@ INPUT FORMAT: JSON stringify
 TASKS:
 1. Validate: image matches description? coordinates realistic for scene? flag mismatches
 2. Analyze: identify pollution type, severity, environmental factors, recommended actions for individuals and communities or organizations
-3. Score: 1-10 (1-3 minimal, 4-6 moderate, 7-8 high, 9-10 critical)
+3. Score: 1-10 (1-3 low, 4-6 moderate, 7-8 high, 9-10 critical)
 
 OUTPUT RULES:
 - Strict JSON stringify format, no markdown, no extra text

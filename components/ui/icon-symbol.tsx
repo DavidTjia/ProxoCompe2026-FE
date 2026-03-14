@@ -1,18 +1,38 @@
-// Fallback for using MaterialIcons on Android and web.
-
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { SymbolWeight } from "expo-symbols";
 import { ComponentProps } from "react";
 import { OpaqueColorValue, type StyleProp, type TextStyle } from "react-native";
 
-type MaterialIconName = ComponentProps<typeof MaterialIcons>["name"];
+// Define available icon sets
+type IconSet = "material" | "material-community" | "ionicons" | "font-awesome";
 
-/**
- * Add your SF Symbols to Material Icons mappings here.
- * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
- * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
- */
-const MAPPING: Record<string, MaterialIconName> = {
+// Mapping types for each icon set
+type MaterialMapping = Record<
+  string,
+  ComponentProps<typeof MaterialIcons>["name"]
+>;
+type MaterialCommunityMapping = Record<
+  string,
+  ComponentProps<typeof MaterialCommunityIcons>["name"]
+>;
+type IoniconsMapping = Record<string, ComponentProps<typeof Ionicons>["name"]>;
+type FontAwesomeMapping = Record<
+  string,
+  ComponentProps<typeof FontAwesome>["name"]
+>;
+
+// Union type for all icon names
+type IconSymbolName =
+  | keyof typeof MATERIAL_MAPPING
+  | keyof typeof MATERIAL_COMMUNITY_MAPPING
+  | keyof typeof IONICONS_MAPPING
+  | keyof typeof FONT_AWESOME_MAPPING;
+
+// Material Icons (default)
+const MATERIAL_MAPPING = {
   "house.fill": "home",
   "paperplane.fill": "send",
   "chevron.left.forwardslash.chevron.right": "code",
@@ -28,8 +48,6 @@ const MAPPING: Record<string, MaterialIconName> = {
   location: "location-on",
   sparkles: "auto-awesome",
   "x.circle.fill": "cancel",
-  "exclamationmark.triangle.fill": "dangerous",
-  "filemenu.and.cursorarrow": "save",
   person: "person",
   "doc.text": "description",
   "arrow.up.right": "north-east",
@@ -39,34 +57,71 @@ const MAPPING: Record<string, MaterialIconName> = {
   mappin: "place",
   "chart.bar": "bar-chart",
   "arrow.right.square": "logout",
+  checkmark: "save",
+} as MaterialMapping;
+
+// Material Community Icons
+const MATERIAL_COMMUNITY_MAPPING = {
+  "exclamationmark.triangle": "alert-outline",
+  leaf: "leaf",
+  plus: "plus-circle",
+} as MaterialCommunityMapping;
+
+// Ionicons
+const IONICONS_MAPPING = {
+  plus: "add-circle",
+} as IoniconsMapping;
+
+// Font Awesome
+const FONT_AWESOME_MAPPING = {
+  plus: "plus-circle",
+} as FontAwesomeMapping;
+
+// Icon set mapping
+const ICON_SETS = {
+  material: {
+    Component: MaterialIcons,
+    mapping: MATERIAL_MAPPING,
+  },
+  "material-community": {
+    Component: MaterialCommunityIcons,
+    mapping: MATERIAL_COMMUNITY_MAPPING,
+  },
+  ionicons: {
+    Component: Ionicons,
+    mapping: IONICONS_MAPPING,
+  },
+  "font-awesome": {
+    Component: FontAwesome,
+    mapping: FONT_AWESOME_MAPPING,
+  },
 };
 
-export type IconSymbolName = keyof typeof MAPPING;
+interface IconSymbolProps {
+  name: IconSymbolName;
+  size?: number;
+  color: string | OpaqueColorValue;
+  style?: StyleProp<TextStyle>;
+  weight?: SymbolWeight;
+  iconSet?: IconSet; // NEW: pilih icon library
+}
 
 /**
- * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
- * This ensures a consistent look across platforms, and optimal resource usage.
- * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
+ * Multi-platform icon component supporting various icon libraries.
+ * - iOS: SF Symbols (via expo-symbols jika tersedia)
+ * - Android/Web: Material Icons, Material Community, Ionicons, Font Awesome
  */
 export function IconSymbol({
   name,
   size = 24,
   color,
   style,
-}: {
-  name: string;
-  size?: number;
-  color: string | OpaqueColorValue;
-  style?: StyleProp<TextStyle>;
-  weight?: SymbolWeight;
-}) {
-  const iconName = MAPPING[name] ?? "help-outline";
+  iconSet = "material", // default
+}: IconSymbolProps) {
+  const { Component, mapping } = ICON_SETS[iconSet];
+  const iconName = mapping[name] || MATERIAL_MAPPING[name] || "help-outline";
+
   return (
-    <MaterialIcons
-      color={color}
-      size={size}
-      name={iconName}
-      style={style}
-    />
+    <Component color={color} size={size} name={iconName as any} style={style} />
   );
 }

@@ -14,6 +14,10 @@ export default function TabLayout() {
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+          tabBarStyle: {
+            backgroundColor: "#fff",
+            // backgroundColor: Colors[colorScheme ?? "light"].background,
+          },
           headerShown: false,
           tabBarButton: HapticTab,
         }}

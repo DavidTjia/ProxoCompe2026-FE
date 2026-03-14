@@ -7,6 +7,8 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors, primaryColor } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme.web";
 import { useCreateReport } from "@/hooks/use-report";
+import { getPollutionStatus } from "@/utils/status-mapping";
+import Color from "color";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import React from "react";
@@ -35,7 +37,10 @@ const ReportResultScreen = () => {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<Params>();
   const aiResponse = JSON.parse(params.aiResponse);
-  const { mutate, isPending, error } = useCreateReport();
+  const { mutate, isPending } = useCreateReport();
+  const pollutionStatus = getPollutionStatus(aiResponse.pollutionScore || 0);
+
+  console.log("result screen :", aiResponse);
 
   const handleSubmit = (mode: "PUBLIC" | "ONLY_ME") => {
     mutate(
@@ -93,23 +98,33 @@ const ReportResultScreen = () => {
           <ThemedText type="title">
             Pollution Score: {aiResponse.pollutionScore || 0}
           </ThemedText>
-          <Badge>
+          <Badge
+            style={{
+              backgroundColor: Color(pollutionStatus.color).lighten(5).hex(),
+              borderColor: Color(pollutionStatus.color).lighten(3).hex(),
+            }}
+          >
             <IconSymbol
-              name="exclamationmark.triangle.fill"
+              iconSet="material-community"
+              name={pollutionStatus.iconName}
               size={20}
-              color="red"
+              color={pollutionStatus.color}
             />
-            <ThemedText type="defaultSemiBold">Critical</ThemedText>
+            <ThemedText
+              type="defaultSemiBold"
+              style={{ textTransform: "capitalize" }}
+            >
+              {pollutionStatus.level}
+            </ThemedText>
           </Badge>
         </View>
 
         {/* AI SUMMARY */}
         <View style={{ gap: 12 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <IconSymbol
-              name="exclamationmark.triangle.fill"
-              size={24}
-              color="black"
+          <View style={styles.row}>
+            <Image
+              source={require("@/assets/images/ai-icon.svg")}
+              style={{ width: 24, height: 24 }}
             />
             <ThemedText type="title">AI Summary</ThemedText>
           </View>
@@ -125,11 +140,7 @@ const ReportResultScreen = () => {
           onPress={() => handleSubmit("ONLY_ME")}
           style={[styles.submitBtn, { backgroundColor: primaryColor + "10" }]}
         >
-          <IconSymbol
-            name="filemenu.and.cursorarrow"
-            size={22}
-            color={primaryColor}
-          />
+          <IconSymbol name="checkmark" size={22} color={primaryColor} />
           <ThemedText
             type="defaultSemiBold"
             style={[styles.submitBtnText, { color: primaryColor }]}
@@ -171,6 +182,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   scoreContainer: { gap: 12, alignItems: "center" },
+  row: { flexDirection: "row", alignItems: "center", gap: 8 },
   summary: {
     backgroundColor: "#fff",
     padding: 16,
@@ -181,6 +193,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     flexDirection: "row",
     gap: 16,
+    backgroundColor: "#fff",
   },
   submitBtn: {
     backgroundColor: primaryColor,
