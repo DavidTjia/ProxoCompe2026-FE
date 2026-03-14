@@ -49,11 +49,16 @@ export type CreateReportForm = {
 
 export type User = {
   id: string;
-  name: string;
+  username: string;
   email: string;
+  phone?: string;
+  profile_picture?: string;
+  created_at?: string;
 };
 
 export type CreateUserInput = {
   name: string;
   email: string;
+  phone?: string;
+  profile_picture?: string;
 };

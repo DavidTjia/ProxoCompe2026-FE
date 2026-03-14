@@ -1,4 +1,5 @@
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useGetUser } from "@/hooks/use-user";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -15,7 +16,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function ProfileScreen() {
   const [preview, setPreview] = useState(false);
 
-  const avatar = require("../../assets/images/profile-placeholder.png");
+  const userId = "c8b79bb3-4dc7-4124-a5b5-957c33914201";
+
+  const { data: user } = useGetUser(userId);
+
+  const avatar = user?.profile_picture
+    ? { uri: user.profile_picture }
+    : require("../../assets/images/profile-placeholder.png");
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -29,7 +36,7 @@ export default function ProfileScreen() {
             <Image source={avatar} style={styles.avatar} contentFit="cover" />
           </Pressable>
 
-          <Text style={styles.name}>Budi Setiawan</Text>
+          <Text style={styles.name}>{user?.username ?? "User"}</Text>
           <Text style={styles.member}>Member since Oct 2023</Text>
         </View>
 
