@@ -22,9 +22,18 @@ export type PaginatedResponse<T> = {
 export type Report = {
   id: string;
   image: string;
+  title: string;
   description: string;
   latitude: number;
   longitude: number;
+  pollution_score: number;
+  rating: number;
+  status: "PUBLISHED" | "DRAFT";
+  created_at: string;
+  ai_summary: string;
+  privacy: "PUBLIC" | "ONLY_ME";
+  location_name?: string;
+  severity?: "CRITICAL" | "MODERATE" | "LOW";
 };
 
 export type CreateReportForm = {

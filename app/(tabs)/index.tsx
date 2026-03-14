@@ -1,122 +1,252 @@
-import { Image } from "expo-image";
-import { Platform, StyleSheet } from "react-native";
-
-import { HelloWave } from "@/components/hello-wave";
-import ParallaxScrollView from "@/components/parallax-scroll-view";
+import {
+  CommunityFeedCard,
+} from "@/components/community-feed-card";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { Link } from "expo-router";
+import {
+  TopRegionsCard,
+  RegionData,
+} from "@/components/top-regions-card";
+import { primaryColor } from "@/constants/theme";
+import { Report } from "@/types";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// ── Mock Data ──────────────────────────────────────────────
+
+const MOCK_REGIONS: RegionData[] = [
+  { name: "North District", score: 8.2 },
+  { name: "East Riverside", score: 7.4 },
+  { name: "West Industrial", score: 6.8 },
+];
+
+const MOCK_FEED_REPORTS: Report[] = [
+  {
+    id: "f1",
+    image:
+      "https://images.unsplash.com/photo-1526749837599-b4eba9fd855e?w=600",
+    title: "Chemical Odor Alert",
+    description:
+      "Significant chemical odor detected near the main factory outlet. Visibility is reduced by...",
+    latitude: -6.2,
+    longitude: 106.8,
+    pollution_score: 5.0,
+    rating: 4.5,
+    status: "PUBLISHED",
+    created_at: "2023-10-24T10:45:00Z",
+    ai_summary: "Chemical odor detected near factory.",
+    privacy: "PUBLIC",
+    location_name: "Old Industrial Zone",
+    severity: "CRITICAL",
+  },
+  {
+    id: "f2",
+    image:
+      "https://images.unsplash.com/photo-1493673272479-a20888bcee10?w=600",
+    title: "River Accumulation",
+    description:
+      "Plastic accumulation near the river bend. Needs immediate cleanup before the upcoming rain.",
+    latitude: -6.2,
+    longitude: 106.8,
+    pollution_score: 2.8,
+    rating: 4.5,
+    status: "PUBLISHED",
+    created_at: "2023-10-20T14:30:00Z",
+    ai_summary: "Plastic accumulation near river bend.",
+    privacy: "PUBLIC",
+    location_name: "Green Valley Creek",
+    severity: "MODERATE",
+  },
+];
+
+// ── Component ──────────────────────────────────────────────
 
 export default function HomeScreen() {
-  // useEffect(() => {
-  //   async function getCurrentLocation() {
-  //     let { status } = await Location.requestForegroundPermissionsAsync();
-  //     if (status !== "granted") {
-  //       // setErrorMsg("Permission to access location was denied");
-  //       return;
-  //     }
-
-  //     let location = await Location.getCurrentPositionAsync({});
-  //     // setLocation(location);
-  //   }
-
-  //   getCurrentLocation();
-  // }, []);
+  const insets = useSafeAreaInsets();
+  const totalReports = 14; // TODO: fetch from API
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
-        />
-      }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit{" "}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText>{" "}
-          to see changes. Press{" "}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: "cmd + d",
-              android: "cmd + m",
-              web: "F12",
-            })}
-          </ThemedText>{" "}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction
-              title="Action"
-              icon="cube"
-              onPress={() => alert("Action pressed")}
+    <ThemedView style={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* ── Hero Header ── */}
+        <LinearGradient
+          colors={[primaryColor, "#1B4B1E", "#2A5C2E"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.heroGradient, { paddingTop: insets.top + 16 }]}
+        >
+          {/* Greeting row */}
+          <View style={styles.greetingRow}>
+            <Image
+              source={require("@/assets/images/profile-placeholder.png")}
+              style={styles.avatar}
+              contentFit="cover"
             />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert("Share pressed")}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert("Delete pressed")}
+            <View style={styles.greetingBubble}>
+              <ThemedText style={styles.greetingText}>Hello, User</ThemedText>
+            </View>
+            <View style={{ flex: 1 }} />
+            <Pressable>
+              <MaterialIcons
+                name="more-vert"
+                size={22}
+                color="rgba(255,255,255,0.7)"
               />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+            </Pressable>
+          </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">
-            npm run reset-project
-          </ThemedText>{" "}
-          to get a fresh <ThemedText type="defaultSemiBold">app</ThemedText>{" "}
-          directory. This will move the current{" "}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{" "}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+          {/* Report count card */}
+          <View style={styles.reportCountCard}>
+            <View style={styles.reportLabelRow}>
+              <MaterialIcons
+                name="description"
+                size={14}
+                color="rgba(255,255,255,0.7)"
+              />
+              <ThemedText style={styles.reportLabel}>REPORTS</ThemedText>
+            </View>
+            <ThemedText style={styles.reportCount}>{totalReports}</ThemedText>
+          </View>
+        </LinearGradient>
+
+        {/* ── Top 10 Regions ── */}
+        <View style={styles.section}>
+          <TopRegionsCard
+            regions={MOCK_REGIONS}
+            onViewFullAnalysis={() => {
+              // TODO: navigate to full analysis
+              console.log("View full analysis");
+            }}
+          />
+        </View>
+
+        {/* ── Community Feed ── */}
+        <View style={styles.section}>
+          <View style={styles.feedHeader}>
+            <ThemedText style={styles.feedTitle}>Community Feed</ThemedText>
+            <Pressable>
+              <ThemedText style={styles.feedFilter}>Most Recent</ThemedText>
+            </Pressable>
+          </View>
+
+          {MOCK_FEED_REPORTS.map((report) => (
+            <CommunityFeedCard
+              key={report.id}
+              report={report}
+              onCommentPress={(r) =>
+                console.log("Comment on:", r.id)
+              }
+              onReportPress={(r) =>
+                console.log("Report:", r.id)
+              }
+            />
+          ))}
+        </View>
+      </ScrollView>
+    </ThemedView>
   );
 }
 
+// ── Styles ──────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 100,
+  },
+
+  // Hero
+  heroGradient: {
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  greetingRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 10,
+    marginBottom: 18,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  avatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.3)",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
+  greetingBubble: {
+    backgroundColor: "rgba(255,255,255,0.12)",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
+  },
+  greetingText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
+  reportCountCard: {
+    backgroundColor: "rgba(0,0,0,0.20)",
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+  reportLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 2,
+  },
+  reportLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "rgba(255,255,255,0.7)",
+    letterSpacing: 1,
+  },
+  reportCount: {
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    lineHeight: 38,
+  },
+
+  // Sections
+  section: {
+    paddingHorizontal: 16,
+    marginTop: 20,
+    gap: 14,
+  },
+
+  // Feed header
+  feedHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 2,
+  },
+  feedTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#11181C",
+  },
+  feedFilter: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#687076",
   },
 });
