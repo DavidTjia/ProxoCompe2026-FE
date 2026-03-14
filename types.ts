@@ -8,7 +8,14 @@ export type PaginationParams = {
   page?: number;
   limit?: number;
   search?: string;
+  sort?: string;
   meta?: string;
+  [key: string]: string | number | boolean | undefined;
+};
+
+export type ReportStatsParams = {
+  "aggregate[avg]": string;
+  "filter[user_id][_eq]": string;
 };
 
 export type PaginatedResponse<T> = {
@@ -21,19 +28,16 @@ export type PaginatedResponse<T> = {
 
 export type Report = {
   id: string;
-  image: string;
-  title: string;
+  photo: string;
   description: string;
-  latitude: number;
-  longitude: number;
-  pollution_score: number;
-  rating: number;
-  status: "PUBLISHED" | "DRAFT";
-  created_at: string;
+  latitude: string;
+  longitude: string;
+  pollution_score: string;
+  avg_rating: string;
+  date_created: string;
   ai_summary: string;
   privacy: "PUBLIC" | "ONLY_ME";
-  location_name?: string;
-  severity?: "CRITICAL" | "MODERATE" | "LOW";
+  username?: string;
 };
 
 export type CreateReportForm = {

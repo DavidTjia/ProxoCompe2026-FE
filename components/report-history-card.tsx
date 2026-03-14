@@ -1,6 +1,11 @@
 import { primaryColor } from "@/constants/theme";
 import { Report } from "@/types";
+import {
+  getPollutionStatus,
+  reportPrivacyStatus,
+} from "@/utils/status-mapping";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import Color from "color";
 import { Image } from "expo-image";
 import React from "react";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -30,16 +35,21 @@ function formatTime(dateString: string): string {
 }
 
 export function ReportHistoryCard({ report, onDetailsPress }: Props) {
-  const isPublished = report.status === "PUBLISHED";
+  const pollutionStatus = getPollutionStatus(
+    Number(report.pollution_score || 0),
+  );
+  const privacyStatus = reportPrivacyStatus[report.privacy];
 
   return (
-    <View style={styles.card}>
+    <Pressable style={styles.card} onPress={() => onDetailsPress?.(report)}>
       {/* Top row: image + info + score */}
       <View style={styles.topRow}>
         {/* Thumbnail */}
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: report.image }}
+            source={{
+              uri: `${process.env.EXPO_PUBLIC_BASE_API_URL}/assets/${report.photo}`,
+            }}
             style={styles.image}
             contentFit="cover"
           />
@@ -47,22 +57,31 @@ export function ReportHistoryCard({ report, onDetailsPress }: Props) {
 
         {/* Info */}
         <View style={styles.info}>
-          <ThemedText type="defaultSemiBold" style={styles.title} numberOfLines={2}>
-            {report.title}
+          <ThemedText
+            type="defaultSemiBold"
+            style={styles.title}
+            numberOfLines={2}
+          >
+            {report.ai_summary}
           </ThemedText>
           <ThemedText style={styles.date}>
-            {formatDate(report.created_at)} • {formatTime(report.created_at)}
+            {formatDate(report.date_created)} •{" "}
+            {formatTime(report.date_created)}
           </ThemedText>
           <View style={styles.ratingRow}>
             <MaterialIcons name="star" size={16} color="#D4A017" />
-            <ThemedText style={styles.ratingText}>{report.rating}</ThemedText>
+            <ThemedText style={styles.ratingText}>
+              {Number(report.avg_rating).toFixed(1) || 0}
+            </ThemedText>
           </View>
         </View>
 
         {/* Score */}
         <View style={styles.scoreColumn}>
-          <ThemedText style={styles.scoreValue}>
-            {report.pollution_score.toFixed(1)}
+          <ThemedText
+            style={[styles.scoreValue, { color: pollutionStatus.color }]}
+          >
+            {Number(report.pollution_score).toFixed(1)}
           </ThemedText>
           <ThemedText style={styles.scoreLabel}>SCORE</ThemedText>
         </View>
@@ -73,28 +92,22 @@ export function ReportHistoryCard({ report, onDetailsPress }: Props) {
         <View
           style={[
             styles.statusBadge,
-            isPublished ? styles.publishedBadge : styles.draftBadge,
+            { backgroundColor: Color(privacyStatus.color).lighten(2).hex() },
           ]}
         >
           <ThemedText
-            style={[
-              styles.statusText,
-              isPublished ? styles.publishedText : styles.draftText,
-            ]}
+            style={[styles.statusText, { color: privacyStatus.color }]}
           >
-            {report.status}
+            {privacyStatus.label}
           </ThemedText>
         </View>
 
-        <Pressable
-          style={styles.detailsBtn}
-          onPress={() => onDetailsPress?.(report)}
-        >
+        <View style={styles.detailsBtn}>
           <ThemedText style={styles.detailsText}>Details</ThemedText>
           <MaterialIcons name="chevron-right" size={18} color="#687076" />
-        </Pressable>
+        </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -125,7 +138,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: "100%",
+    flex: 1,
   },
   info: {
     flex: 1,
@@ -134,6 +147,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     lineHeight: 20,
+    color: primaryColor,
   },
   date: {
     fontSize: 13,
@@ -187,12 +201,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 0.3,
   },
-  publishedText: {
-    color: primaryColor,
-  },
-  draftText: {
-    color: "#687076",
-  },
   detailsBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -200,7 +208,7 @@ const styles = StyleSheet.create({
   },
   detailsText: {
     fontSize: 14,
-    color: "#687076",
+    color: primaryColor,
     fontWeight: "500",
   },
 });

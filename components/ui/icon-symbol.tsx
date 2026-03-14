@@ -52,6 +52,7 @@ const MATERIAL_MAPPING = {
   "doc.text": "description",
   "arrow.up.right": "north-east",
   "star.fill": "star",
+  "star.outline": "star-outline",
   "bubble.left": "chat-bubble-outline",
   "exclamationmark.circle": "report-problem",
   mappin: "place",
