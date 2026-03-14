@@ -1,465 +1,243 @@
+import HeaderCst from "@/components/header-cst";
 import { ThemedText } from "@/components/themed-text";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { primaryColor } from "@/constants/theme";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
-import { router, useLocalSearchParams } from "expo-router";
-import React from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import MapView, { Marker } from "react-native-maps";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-const SEVERITY_CONFIG = {
-  CRITICAL: {
-    color: "#E53935",
-    backgroundColor: "#FFCDD2",
-    icon: "warning" as const,
-    label: "Critical",
-  },
-  MODERATE: {
-    color: "#F57C00",
-    backgroundColor: "#FFE0B2",
-    icon: "error-outline" as const,
-    label: "Moderate",
-  },
-  LOW: {
-    color: "#43A047",
-    backgroundColor: "#C8E6C9",
-    icon: "check-circle-outline" as const,
-    label: "Low",
-  },
-};
+export default function ReportDetailScreen() {
+  const latitude = 1.4166462762303433;
+  const longitude = 124.98807019370982;
 
-export default function ReportDetailModal() {
-  const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{
-    id: string;
-    image: string;
-    title: string;
-    description: string;
-    pollution_score: string;
-    rating: string;
-    location_name: string;
-    severity: string;
-    ai_summary: string;
-    created_at: string;
-    latitude: string;
-    longitude: string;
-  }>();
-
-  const severity = (params.severity ?? "LOW") as keyof typeof SEVERITY_CONFIG;
-  const config = SEVERITY_CONFIG[severity] ?? SEVERITY_CONFIG.LOW;
-  const score = parseFloat(params.pollution_score ?? "0");
-  const rating = parseFloat(params.rating ?? "0");
-
-  function formatDate(dateStr: string): string {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-  }
-
-  function formatTime(dateStr: string): string {
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  }
+  const photo = require("@/assets/images/upload-img-placeholder.png");
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        bounces={false}
-      >
-        {/* ── Hero Image ── */}
+    <SafeAreaView edges={["top"]} style={styles.safeArea}>
+      <HeaderCst title="Report Details" />
+
+      <ScrollView contentContainerStyle={styles.container}>
+        {/* PHOTO */}
         <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: params.image }}
-            style={styles.heroImage}
-            contentFit="cover"
-          />
-          <LinearGradient
-            colors={["rgba(0,0,0,0.4)", "transparent", "rgba(0,0,0,0.6)"]}
-            style={styles.imageOverlay}
-          />
+          <Image source={photo} style={styles.image} contentFit="cover" />
 
-          {/* Back button */}
-          <Pressable
-            style={[styles.backButton, { top: insets.top + 8 }]}
-            onPress={() => router.back()}
-          >
-            <MaterialIcons name="arrow-back" size={22} color="#FFF" />
-          </Pressable>
-
-          {/* Severity badge */}
-          <View
-            style={[
-              styles.severityBadge,
-              { backgroundColor: config.backgroundColor, top: insets.top + 8 },
-            ]}
-          >
-            <MaterialIcons name={config.icon} size={14} color={config.color} />
-            <ThemedText style={[styles.severityText, { color: config.color }]}>
-              {config.label}
-            </ThemedText>
-          </View>
-
-          {/* Location overlay */}
-          <View style={styles.locationOverlay}>
-            <MaterialIcons name="place" size={16} color="#FFF" />
-            <ThemedText style={styles.locationText}>
-              {params.location_name ?? "Unknown Location"}
-            </ThemedText>
+          <View style={styles.badge}>
+            <ThemedText style={styles.badgeText}>HIGH URGENCY</ThemedText>
           </View>
         </View>
 
-        {/* ── Content ── */}
-        <View style={styles.content}>
-          {/* Title row */}
-          <View style={styles.titleRow}>
-            <ThemedText style={styles.title} numberOfLines={2}>
-              {params.title}
+        {/* TITLE */}
+        <View style={styles.titleRow}>
+          <View style={{ flex: 1 }}>
+            <ThemedText type="title">Riverbank Plastic Pollution</ThemedText>
+
+            <ThemedText style={styles.location}>
+              📍 Eastwood River Park, Sector 4
             </ThemedText>
-            <View style={styles.scoreBadge}>
-              <ThemedText style={styles.scoreLabel}>SCORE</ThemedText>
-              <ThemedText style={styles.scoreValue}>
-                {score.toFixed(1)}
-              </ThemedText>
-            </View>
-          </View>
 
-          {/* Meta row */}
-          <View style={styles.metaRow}>
-            <View style={styles.metaItem}>
-              <MaterialIcons name="schedule" size={14} color="#888" />
-              <ThemedText style={styles.metaText}>
-                {params.created_at
-                  ? `${formatDate(params.created_at)} • ${formatTime(params.created_at)}`
-                  : "Unknown date"}
-              </ThemedText>
-            </View>
-          </View>
-
-          {/* Rating */}
-          <View style={styles.ratingRow}>
-            <MaterialIcons name="star" size={18} color="#D4A017" />
-            <ThemedText style={styles.ratingValue}>
-              {rating.toFixed(1)}
+            <ThemedText style={styles.reported}>
+              Reported by Alex G • 2 hours ago
             </ThemedText>
-            <ThemedText style={styles.ratingLabel}>community rating</ThemedText>
           </View>
 
-          {/* Divider */}
-          <View style={styles.divider} />
+          <View style={styles.score}>
+            <ThemedText style={styles.scoreLabel}>SCORE</ThemedText>
+            <ThemedText style={styles.scoreNumber}>8.4</ThemedText>
+          </View>
+        </View>
 
-          {/* Description */}
-          <ThemedText style={styles.sectionTitle}>Description</ThemedText>
-          <ThemedText style={styles.descriptionText}>
-            {params.description}
+        {/* AI SUMMARY */}
+        <View style={styles.aiBox}>
+          <View style={styles.aiHeader}>
+            <IconSymbol name="sparkles" size={18} color={primaryColor} />
+            <ThemedText style={styles.aiTitle}>AI ANALYSIS SUMMARY</ThemedText>
+          </View>
+
+          <ThemedText style={styles.aiText}>
+            Multiple instances of non-biodegradable synthetic waste detected.
+            This accumulation poses a significant risk to local aquatic fauna
+            and may cause drainage blockage if not addressed before the rainy
+            season. Estimated volume: 1.2 cubic meters.
           </ThemedText>
+        </View>
 
-          {/* AI Summary */}
-          {params.ai_summary ? (
-            <>
-              <View style={styles.aiCard}>
-                <View style={styles.aiHeader}>
-                  <MaterialIcons
-                    name="auto-awesome"
-                    size={16}
-                    color={primaryColor}
-                  />
-                  <ThemedText style={styles.aiTitle}>AI Analysis</ThemedText>
-                </View>
-                <ThemedText style={styles.aiText}>
-                  {params.ai_summary}
-                </ThemedText>
-              </View>
-            </>
-          ) : null}
+        {/* DESCRIPTION */}
+        <View>
+          <ThemedText type="subtitle">Detailed Description</ThemedText>
 
-          {/* Location Details */}
-          <ThemedText style={styles.sectionTitle}>Location</ThemedText>
-          <View style={styles.locationCard}>
-            <MaterialIcons name="place" size={20} color={primaryColor} />
-            <View style={styles.locationDetails}>
-              <ThemedText style={styles.locationName}>
-                {params.location_name ?? "Unknown Location"}
-              </ThemedText>
-              <ThemedText style={styles.coordinates}>
-                {params.latitude}, {params.longitude}
-              </ThemedText>
-            </View>
+          <ThemedText style={styles.description}>
+            Found a massive pile of discarded plastic bottles, industrial
+            packaging, and old fishing nets near the northern bridge of Eastwood
+            River. The water seems to have been washed up during the high tide
+            last night. The smell of stagnant water is starting to become
+            noticeable.
+          </ThemedText>
+        </View>
+
+        {/* LOCATION */}
+        <View>
+          <ThemedText type="subtitle">Location</ThemedText>
+
+          <View style={styles.mapContainer}>
+            <MapView
+              style={{ flex: 1 }}
+              mapType="standard"
+              initialRegion={{
+                latitude,
+                longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+              scrollEnabled={false}
+              zoomEnabled={false}
+            >
+              <Marker coordinate={{ latitude, longitude }} />
+            </MapView>
           </View>
+        </View>
+
+        {/* ACTION BUTTONS */}
+        <View style={styles.actions}>
+          <TouchableOpacity style={styles.actionBtn}>
+            <IconSymbol name="star" size={20} color={primaryColor} />
+            <ThemedText>Rate</ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.actionBtn}>
+            <IconSymbol name="bubble.left" size={20} color={primaryColor} />
+            <ThemedText>Comment</ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.actionBtn}>
+            <IconSymbol name="exclamationmark.circle" size={20} color="red" />
+            <ThemedText style={{ color: "red" }}>Report</ThemedText>
+          </TouchableOpacity>
         </View>
       </ScrollView>
-
-      {/* ── Bottom Action Bar ── */}
-      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-        <Pressable style={styles.commentButton}>
-          <MaterialIcons name="chat-bubble-outline" size={18} color={primaryColor} />
-          <ThemedText style={styles.commentButtonText}>Comment</ThemedText>
-        </Pressable>
-        <Pressable style={styles.reportButton}>
-          <MaterialIcons name="report-problem" size={18} color="#FFF" />
-          <ThemedText style={styles.reportButtonText}>Report Issue</ThemedText>
-        </Pressable>
-      </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: "#F3E8D3",
   },
 
-  // Hero image
-  imageContainer: {
-    height: 280,
-    position: "relative",
-  },
-  heroImage: {
-    width: "100%",
-    height: "100%",
-  },
-  imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  backButton: {
-    position: "absolute",
-    left: 16,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "rgba(0,0,0,0.35)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  severityBadge: {
-    position: "absolute",
-    right: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-  },
-  severityText: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.3,
-  },
-  locationOverlay: {
-    position: "absolute",
-    bottom: 16,
-    left: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  locationText: {
-    color: "#FFF",
-    fontSize: 14,
-    fontWeight: "600",
+  container: {
+    padding: 16,
+    gap: 20,
   },
 
-  // Content
-  content: {
-    padding: 20,
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    marginTop: -20,
+  imageContainer: {
+    borderRadius: 20,
+    overflow: "hidden",
+  },
+
+  image: {
+    width: "100%",
+    height: 220,
+  },
+
+  badge: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    backgroundColor: "#E53935",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+
+  badgeText: {
+    color: "white",
+    fontSize: 12,
   },
 
   titleRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
     gap: 12,
   },
-  title: {
-    flex: 1,
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#11181C",
-    lineHeight: 28,
-  },
-  scoreBadge: {
-    backgroundColor: "#F0F7F0",
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#D4EDDA",
-  },
-  scoreLabel: {
-    fontSize: 9,
-    fontWeight: "600",
-    color: "#8B9A7E",
-    letterSpacing: 0.5,
-  },
-  scoreValue: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: primaryColor,
-    lineHeight: 28,
+
+  location: {
+    marginTop: 4,
+    color: "#6B7B6B",
   },
 
-  metaRow: {
-    marginTop: 10,
-    gap: 6,
-  },
-  metaItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  metaText: {
-    fontSize: 13,
-    color: "#888",
+  reported: {
+    color: "#6B7B6B",
+    fontSize: 12,
   },
 
-  ratingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 12,
-  },
-  ratingValue: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#8B7000",
-  },
-  ratingLabel: {
-    fontSize: 13,
-    color: "#AAA",
-  },
-
-  divider: {
-    height: 1,
-    backgroundColor: "#ECECEC",
-    marginVertical: 18,
-  },
-
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#11181C",
-    marginBottom: 8,
-  },
-  descriptionText: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: "#444",
-    marginBottom: 18,
-  },
-
-  // AI card
-  aiCard: {
-    backgroundColor: "#F0F7F0",
-    borderRadius: 14,
+  score: {
+    backgroundColor: primaryColor,
+    borderRadius: 12,
     padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#D4EDDA",
+    alignItems: "center",
+    justifyContent: "center",
   },
+
+  scoreLabel: {
+    fontSize: 10,
+    color: "white",
+  },
+
+  scoreNumber: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+
+  aiBox: {
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: primaryColor,
+    borderRadius: 12,
+    padding: 12,
+  },
+
   aiHeader: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    marginBottom: 8,
+    marginBottom: 6,
   },
+
   aiTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: primaryColor,
+    fontWeight: "bold",
   },
+
   aiText: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: "#444",
+    fontSize: 13,
+    color: "#4B5563",
   },
 
-  // Location card
-  locationCard: {
+  description: {
+    marginTop: 6,
+    color: "#374151",
+  },
+
+  mapContainer: {
+    marginTop: 8,
+    height: 160,
+    borderRadius: 16,
+    overflow: "hidden",
+    backgroundColor: "#E2E8F0",
+  },
+
+  actions: {
     flexDirection: "row",
-    alignItems: "center",
+    justifyContent: "space-between",
     gap: 12,
-    backgroundColor: "#FAFAFA",
-    borderRadius: 14,
+  },
+
+  actionBtn: {
+    flex: 1,
+    backgroundColor: "#E5E5E5",
     padding: 14,
-    borderWidth: 1,
-    borderColor: "#ECECEC",
-    marginBottom: 20,
-  },
-  locationDetails: {
-    flex: 1,
-    gap: 2,
-  },
-  locationName: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-  },
-  coordinates: {
-    fontSize: 12,
-    color: "#999",
-  },
-
-  // Bottom bar
-  bottomBar: {
-    flexDirection: "row",
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    backgroundColor: "#FFF",
-    borderTopWidth: 1,
-    borderTopColor: "#ECECEC",
-  },
-  commentButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 14,
     borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: primaryColor,
-    backgroundColor: "#FFF",
-  },
-  commentButtonText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: primaryColor,
-  },
-  reportButton: {
-    flex: 1,
-    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 14,
-    borderRadius: 14,
-    backgroundColor: primaryColor,
-  },
-  reportButtonText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#FFF",
+    gap: 4,
   },
 });

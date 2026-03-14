@@ -56,10 +56,10 @@ export default function RootLayout() {
                 name="report-detail"
                 options={{
                   headerShown: false,
-                  presentation: "modal",
                 }}
               />
             </Stack>
+
             <StatusBar style="auto" />
           </ThemeProvider>
         </GestureHandlerRootView>

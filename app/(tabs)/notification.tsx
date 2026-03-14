@@ -16,8 +16,7 @@ const RECENT_NOTIFICATIONS: NotificationItem[] = [
     id: "1",
     type: "location",
     title: "New report in your area",
-    description:
-      "A new incident has been reported near your current location.",
+    description: "A new incident has been reported near your current location.",
     timeAgo: "2m ago",
   },
   {
@@ -91,7 +90,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 8,
-    fontStyle: "italic",
   },
   scrollContent: {
     paddingHorizontal: 16,
