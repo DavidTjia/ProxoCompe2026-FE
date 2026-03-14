@@ -4,7 +4,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { primaryColor } from "@/constants/theme";
 import { useInfiniteReports, useReportStats } from "@/hooks/use-report";
-import { Report } from "@/types";
+import { Report, User } from "@/types";
 import { router } from "expo-router";
 import React from "react";
 import {
@@ -46,19 +46,13 @@ export default function HistoryScreen() {
   const totalReports = data?.pages[0]?.meta?.total_count || 0;
   const averageScore = Number(reportStats?.avg?.pollution_score || 0);
 
-  const handleDetailsPress = (report: Report) => {
+  const handleDetailsPress = (report: Report & { user_id?: User }) => {
+    const { user_id, ...rest } = report;
     router.push({
       pathname: "/report-detail",
       params: {
-        id: report.id,
-        image: report.photo,
-        description: report.description,
-        pollution_score: String(report.pollution_score),
-        rating: String(report.avg_rating),
-        ai_summary: report.ai_summary,
-        created_at: report.date_created,
-        latitude: String(report.latitude),
-        longitude: String(report.longitude),
+        ...rest,
+        username: user_id?.username,
       },
     });
   };

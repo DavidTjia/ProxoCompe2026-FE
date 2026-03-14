@@ -1,49 +1,97 @@
 import HeaderCst from "@/components/header-cst";
 import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { primaryColor } from "@/constants/theme";
+import { Report } from "@/types";
+import {
+  getPollutionStatus,
+  reportPrivacyStatus,
+} from "@/utils/status-mapping";
 import { Image } from "expo-image";
+import { reverseGeocodeAsync } from "expo-location";
+import { useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ReportDetailScreen() {
-  const latitude = 1.4166462762303433;
-  const longitude = 124.98807019370982;
+  const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<Report>();
+  const pollutionStatus = getPollutionStatus(
+    Number(params.pollution_score || 0),
+  );
+  const privacyStatus = reportPrivacyStatus[params.privacy];
+  const [address, setAddress] = useState("");
 
-  const photo = require("@/assets/images/upload-img-placeholder.png");
+  const getAddress = async () => {
+    try {
+      const { latitude, longitude } = params;
+      const address = await reverseGeocodeAsync({
+        latitude: Number(latitude),
+        longitude: Number(longitude),
+      });
+
+      setAddress(address?.[0]?.formattedAddress || "");
+    } catch (error) {
+      console.log("error address", error);
+    }
+  };
+
+  getAddress();
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.safeArea}>
-      <HeaderCst title="Report Details" />
+    <ThemedView
+      style={[
+        styles.safeArea,
+        { paddingTop: insets.top, paddingBottom: insets.bottom },
+      ]}
+    >
+      <HeaderCst title="Report Detail" />
 
       <ScrollView contentContainerStyle={styles.container}>
         {/* PHOTO */}
         <View style={styles.imageContainer}>
-          <Image source={photo} style={styles.image} contentFit="cover" />
+          <Image
+            source={`${process.env.EXPO_PUBLIC_BASE_API_URL}/assets/${params.photo}`}
+            style={styles.image}
+            contentFit="contain"
+          />
 
-          <View style={styles.badge}>
-            <ThemedText style={styles.badgeText}>HIGH URGENCY</ThemedText>
+          <View
+            style={[
+              styles.badge,
+              {
+                backgroundColor: pollutionStatus.color,
+              },
+            ]}
+          >
+            <ThemedText style={styles.badgeText}>
+              {pollutionStatus.level}
+            </ThemedText>
           </View>
         </View>
 
         {/* TITLE */}
         <View style={styles.titleRow}>
           <View style={{ flex: 1 }}>
-            <ThemedText type="title">Riverbank Plastic Pollution</ThemedText>
+            {/* <ThemedText type="title"></ThemedText> */}
 
-            <ThemedText style={styles.location}>
-              📍 Eastwood River Park, Sector 4
-            </ThemedText>
+            <ThemedText style={styles.location}>📍 {address}</ThemedText>
 
             <ThemedText style={styles.reported}>
-              Reported by Alex G • 2 hours ago
+              Reported by {params.username} • 2 hours ago
             </ThemedText>
           </View>
 
-          <View style={styles.score}>
+          <View
+            style={[styles.score, { backgroundColor: pollutionStatus.color }]}
+          >
             <ThemedText style={styles.scoreLabel}>SCORE</ThemedText>
-            <ThemedText style={styles.scoreNumber}>8.4</ThemedText>
+            <ThemedText style={styles.scoreNumber}>
+              {Number(params.pollution_score).toFixed(1)}
+            </ThemedText>
           </View>
         </View>
 
@@ -54,12 +102,7 @@ export default function ReportDetailScreen() {
             <ThemedText style={styles.aiTitle}>AI ANALYSIS SUMMARY</ThemedText>
           </View>
 
-          <ThemedText style={styles.aiText}>
-            Multiple instances of non-biodegradable synthetic waste detected.
-            This accumulation poses a significant risk to local aquatic fauna
-            and may cause drainage blockage if not addressed before the rainy
-            season. Estimated volume: 1.2 cubic meters.
-          </ThemedText>
+          <ThemedText style={styles.aiText}>{params.ai_summary}</ThemedText>
         </View>
 
         {/* DESCRIPTION */}
@@ -67,11 +110,7 @@ export default function ReportDetailScreen() {
           <ThemedText type="subtitle">Detailed Description</ThemedText>
 
           <ThemedText style={styles.description}>
-            Found a massive pile of discarded plastic bottles, industrial
-            packaging, and old fishing nets near the northern bridge of Eastwood
-            River. The water seems to have been washed up during the high tide
-            last night. The smell of stagnant water is starting to become
-            noticeable.
+            {params.description}
           </ThemedText>
         </View>
 
@@ -82,94 +121,92 @@ export default function ReportDetailScreen() {
           <View style={styles.mapContainer}>
             <MapView
               style={{ flex: 1 }}
-              mapType="standard"
               initialRegion={{
-                latitude,
-                longitude,
+                latitude: Number(params.latitude),
+                longitude: Number(params.longitude),
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
               }}
-              scrollEnabled={false}
-              zoomEnabled={false}
             >
-              <Marker coordinate={{ latitude, longitude }} />
+              <Marker
+                coordinate={{
+                  latitude: Number(params.latitude),
+                  longitude: Number(params.longitude),
+                }}
+              />
             </MapView>
           </View>
         </View>
 
         {/* ACTION BUTTONS */}
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.actionBtn}>
-            <IconSymbol name="star" size={20} color={primaryColor} />
-            <ThemedText>Rate</ThemedText>
-          </TouchableOpacity>
+        {params.privacy === "PUBLIC" && (
+          <View style={styles.actions}>
+            <TouchableOpacity style={styles.actionBtn}>
+              <IconSymbol name="star.outline" size={20} color={primaryColor} />
+              <ThemedText>Rate</ThemedText>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionBtn}>
-            <IconSymbol name="bubble.left" size={20} color={primaryColor} />
-            <ThemedText>Comment</ThemedText>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.actionBtn}>
+              <IconSymbol name="bubble.left" size={20} color={primaryColor} />
+              <ThemedText>Comment</ThemedText>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionBtn}>
-            <IconSymbol name="exclamationmark.circle" size={20} color="red" />
-            <ThemedText style={{ color: "red" }}>Report</ThemedText>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity style={styles.actionBtn}>
+              <IconSymbol name="exclamationmark.circle" size={20} color="red" />
+              <ThemedText style={{ color: "red" }}>Report</ThemedText>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
-    </SafeAreaView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F3E8D3",
   },
-
   container: {
     padding: 16,
     gap: 20,
   },
-
   imageContainer: {
-    borderRadius: 20,
+    borderRadius: 24,
     overflow: "hidden",
+    aspectRatio: 16 / 9,
+    backgroundColor: "gray",
   },
-
   image: {
     width: "100%",
-    height: 220,
+    flex: 1,
   },
-
   badge: {
     position: "absolute",
     top: 12,
     right: 12,
-    backgroundColor: "#E53935",
+    backgroundColor: "#4f4f4f",
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
   },
-
   badgeText: {
     color: "white",
     fontSize: 12,
+    textTransform: "capitalize",
   },
 
   titleRow: {
     flexDirection: "row",
     gap: 12,
   },
-
   location: {
     marginTop: 4,
     color: "#6B7B6B",
   },
-
   reported: {
     color: "#6B7B6B",
     fontSize: 12,
   },
-
   score: {
     backgroundColor: primaryColor,
     borderRadius: 12,
@@ -177,18 +214,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   scoreLabel: {
     fontSize: 10,
     color: "white",
   },
-
   scoreNumber: {
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
   },
-
   aiBox: {
     borderWidth: 1,
     borderStyle: "dashed",
@@ -196,42 +230,36 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
   },
-
   aiHeader: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
     marginBottom: 6,
   },
-
   aiTitle: {
     fontWeight: "bold",
   },
-
   aiText: {
     fontSize: 13,
     color: "#4B5563",
   },
-
   description: {
     marginTop: 6,
     color: "#374151",
   },
-
   mapContainer: {
     marginTop: 8,
-    height: 160,
+    width: "100%",
+    aspectRatio: 16 / 9,
     borderRadius: 16,
     overflow: "hidden",
     backgroundColor: "#E2E8F0",
   },
-
   actions: {
     flexDirection: "row",
     justifyContent: "space-between",
     gap: 12,
   },
-
   actionBtn: {
     flex: 1,
     backgroundColor: "#E5E5E5",

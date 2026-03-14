@@ -37,6 +37,7 @@ export const useInfiniteReports = (limit = 10) => {
         meta: "*",
         sort: "-date_created",
         "filter[user_id][_eq]": user_id,
+        fields: "*,user_id.username",
       });
       return res.data;
     },

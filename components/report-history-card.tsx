@@ -35,7 +35,9 @@ function formatTime(dateString: string): string {
 }
 
 export function ReportHistoryCard({ report, onDetailsPress }: Props) {
-  const pollutionStatus = getPollutionStatus(report.pollution_score);
+  const pollutionStatus = getPollutionStatus(
+    Number(report.pollution_score || 0),
+  );
   const privacyStatus = reportPrivacyStatus[report.privacy];
 
   return (

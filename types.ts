@@ -10,7 +10,7 @@ export type PaginationParams = {
   search?: string;
   sort?: string;
   meta?: string;
-  [key: `filter[${string}]`]: string | number | boolean | undefined;
+  [key: string]: string | number | boolean | undefined;
 };
 
 export type ReportStatsParams = {
@@ -30,16 +30,14 @@ export type Report = {
   id: string;
   photo: string;
   description: string;
-  latitude: number;
-  longitude: number;
-  pollution_score: number;
-  avg_rating: number;
-  status: "PUBLISHED" | "DRAFT";
+  latitude: string;
+  longitude: string;
+  pollution_score: string;
+  avg_rating: string;
   date_created: string;
   ai_summary: string;
   privacy: "PUBLIC" | "ONLY_ME";
-  location_name?: string;
-  severity?: "CRITICAL" | "MODERATE" | "LOW";
+  username?: string;
 };
 
 export type CreateReportForm = {
@@ -55,7 +53,7 @@ export type CreateReportForm = {
 
 export type User = {
   id: string;
-  name: string;
+  username: string;
   email: string;
 };
 
