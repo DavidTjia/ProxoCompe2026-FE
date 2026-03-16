@@ -7,8 +7,8 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   requestForegroundPermissionsAsync,
-  reverseGeocodeAsync,
 } from "expo-location";
+import { getGeocodedAddress } from "@/utils/geocode";
 import React, { useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { ThemedText } from "./themed-text";
@@ -18,6 +18,7 @@ type Props = {
   report: Report;
   onCardPress?: (report: Report) => void;
   onCommentPress?: (report: Report) => void;
+  onRatingPress?: (report: Report) => void;
   onReportPress?: (report: Report) => void;
 };
 
@@ -25,6 +26,7 @@ export function CommunityFeedCard({
   report,
   onCardPress,
   onCommentPress,
+  onRatingPress,
   onReportPress,
 }: Props) {
   const pollutionStatus = getPollutionStatus(
@@ -38,12 +40,12 @@ export function CommunityFeedCard({
       const { status } = await requestForegroundPermissionsAsync();
       if (status !== "granted") return;
 
-      const address = await reverseGeocodeAsync({
-        latitude: Number(latitude),
-        longitude: Number(longitude),
-      });
+      const formattedAddress = await getGeocodedAddress(
+        Number(latitude),
+        Number(longitude)
+      );
 
-      setAddress(address?.[0]?.formattedAddress || "");
+      setAddress(formattedAddress || "");
     } catch (error) {
       console.log("error address", error);
     }
@@ -124,12 +126,15 @@ export function CommunityFeedCard({
 
       {/* Action row */}
       <View style={styles.actionRow}>
-        <View style={styles.ratingPill}>
+        <Pressable
+          style={styles.ratingPill}
+          onPress={() => onRatingPress?.(report)}
+        >
           <MaterialIcons name="star" size={16} color="#D4A017" />
           <ThemedText style={styles.ratingText}>
             {Number(report.avg_rating || 0).toFixed(1)}
           </ThemedText>
-        </View>
+        </Pressable>
 
         <Pressable
           style={styles.actionPill}
