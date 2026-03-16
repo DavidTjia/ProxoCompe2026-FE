@@ -5,4 +5,14 @@ export const queryKeys = {
       [...queryKeys.report.all, "list", filters] as const,
     detail: (id: string) => [...queryKeys.report.all, "detail", id] as const,
   },
+  rating: {
+    all: ["rating"] as const,
+    byReport: (reportId: string) =>
+      [...queryKeys.rating.all, "report", reportId] as const,
+  },
+  comment: {
+    all: ["comment"] as const,
+    byReport: (reportId: string) =>
+      [...queryKeys.comment.all, "report", reportId] as const,
+  },
 } as const;

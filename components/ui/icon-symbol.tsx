@@ -58,6 +58,7 @@ const MATERIAL_MAPPING = {
   "chart.bar": "bar-chart",
   "arrow.right.square": "logout",
   checkmark: "save",
+  trash: "delete",
 } as MaterialMapping;
 
 // Material Community Icons
