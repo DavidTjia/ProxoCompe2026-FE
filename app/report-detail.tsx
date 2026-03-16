@@ -152,7 +152,12 @@ export default function ReportDetailScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.actionBtn}>
-              <IconSymbol name="exclamationmark.circle" size={20} color="red" />
+              <IconSymbol
+                iconSet="material-community"
+                name="exclamationmark.circle"
+                size={20}
+                color="red"
+              />
               <ThemedText style={{ color: "red" }}>Report</ThemedText>
             </TouchableOpacity>
           </View>
@@ -196,6 +201,7 @@ const styles = StyleSheet.create({
   },
 
   titleRow: {
+    alignItems: "flex-start",
     flexDirection: "row",
     gap: 12,
   },

@@ -1,10 +1,11 @@
+import { ThemedView } from "@/components/themed-view";
+import { useLogin } from "@/hooks/use-user";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
   Image,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,60 +13,87 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SignInScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { mutate, isPending } = useLogin();
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
+    // validate
     if (!email || !password) {
       Alert.alert("Error", "Please enter email and password");
       return;
     }
 
-    try {
-      setLoading(true);
-
-      const params = new URLSearchParams({
-        "filter[email][_eq]": email,
-        // "filter[password][_eq]": password,
-        limit: "1",
-      });
-
-      const res = await fetch(
-        `${process.env.EXPO_PUBLIC_BASE_API_URL}/items/users?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.EXPO_PUBLIC_BASE_API_KEY}`,
-          },
+    mutate(
+      { email, password },
+      {
+        onSuccess: () => {
+          router.replace("/(tabs)");
         },
-      );
-
-      const data = await res.json();
-      console.log("LOGIN RESPONSE", data);
-      if (res.status === 200) {
-        console.log("LOGIN SUCCESS", data);
-
-        router.replace("/(tabs)");
-      } else {
-        Alert.alert("Login Failed", "Email or password is incorrect");
-      }
-    } catch (error) {
-      console.log(error);
-      Alert.alert("Error", "Cannot connect to server");
-    } finally {
-      setLoading(false);
-    }
+        onError: (error) => {
+          Alert.alert("Login Failed", error.message);
+        },
+      },
+    );
   };
 
+  // const handleLogin = async () => {
+  //   if (!email || !password) {
+  //     Alert.alert("Error", "Please enter email and password");
+  //     return;
+  //   }
+
+  //   try {
+  //     setLoading(true);
+
+  //     const params = new URLSearchParams({
+  //       "filter[email][_eq]": email,
+  //       // "filter[password][_eq]": password,
+  //       limit: "1",
+  //     });
+
+  //     const res = await fetch(
+  //       `${process.env.EXPO_PUBLIC_BASE_API_URL}/items/users?${params.toString()}`,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${process.env.EXPO_PUBLIC_BASE_API_KEY}`,
+  //         },
+  //       },
+  //     );
+
+  //     const data = await res.json();
+  //     console.log("LOGIN RESPONSE", data);
+  //     if (res.status === 200) {
+  //       console.log("LOGIN SUCCESS", data);
+
+  //       router.replace("/(tabs)");
+  //     } else {
+  //       Alert.alert("Login Failed", "Email or password is incorrect");
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     Alert.alert("Error", "Cannot connect to server");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   return (
-    <SafeAreaView style={styles.container}>
+    <ThemedView
+      style={[
+        styles.container,
+        { paddingTop: insets.top, paddingBottom: insets.bottom },
+      ]}
+    >
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.wrapper}>
           {/* Back Button */}
@@ -126,15 +154,19 @@ export default function SignInScreen() {
           </TouchableOpacity>
 
           {/* Sign In Button */}
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <TouchableOpacity
+            style={styles.button}
+            disabled={isPending}
+            onPress={handleLogin}
+          >
             <Text style={styles.buttonText}>
-              {loading ? "Signing In..." : "Sign In"}
+              {isPending ? "Signing In..." : "Sign In"}
             </Text>
           </TouchableOpacity>
 
           {/* Sign Up */}
           <View style={styles.bottomText}>
-            <Text style={{ color: "#1C3D2F" }}>Don’t have an account? </Text>
+            <Text style={{ color: "#1C3D2F" }}>Don't have an account? </Text>
 
             <TouchableOpacity onPress={() => router.push("/(auth)/signup")}>
               <Text style={styles.signup}>Sign Up</Text>
@@ -142,14 +174,13 @@ export default function SignInScreen() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#E6DCC8",
   },
 
   wrapper: {

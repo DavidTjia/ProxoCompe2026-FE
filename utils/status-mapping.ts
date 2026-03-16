@@ -6,12 +6,12 @@ export const getPollutionStatus = (value: number) => {
     return {
       level: "high",
       color: "#EF4444",
-      iconName: "exclamationmark-triangle",
+      iconName: "exclamationmark.triangle",
     };
   return {
     level: "critical",
     color: "#cd0000",
-    iconName: "exclamationmark-triangle",
+    iconName: "exclamationmark.triangle",
   };
 };
 

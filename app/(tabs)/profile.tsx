@@ -1,9 +1,11 @@
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { useGetUser } from "@/hooks/use-user";
+import { useReportStats } from "@/hooks/use-report";
+import { useGetUser, useLogout } from "@/hooks/use-user";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
+  Alert,
   Modal,
   Pressable,
   StyleSheet,
@@ -15,14 +17,28 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const [preview, setPreview] = useState(false);
+  const { data: user, error } = useGetUser();
+  const { data: reportStats } = useReportStats();
+  const { mutate } = useLogout();
 
-  const userId = "c8b79bb3-4dc7-4124-a5b5-957c33914201";
+  if (error) {
+    Alert.alert("Error Profile", error.message);
+  }
 
-  const { data: user } = useGetUser(userId);
+  const avatar = user?.avatar
+    ? { uri: `${process.env.EXPO_PUBLIC_BASE_API_URL}/assets/${user.avatar}` }
+    : require("@/assets/images/profile-placeholder.png");
 
-  const avatar = user?.profile_picture
-    ? { uri: user.profile_picture }
-    : require("../../assets/images/profile-placeholder.png");
+  const handleLogout = () => {
+    mutate(undefined, {
+      onSuccess: () => {
+        router.replace("/(auth)/signin");
+      },
+      onError: (error) => {
+        Alert.alert("Error logout", error.message);
+      },
+    });
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -70,7 +86,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
 
         {/* LOGOUT */}
-        <TouchableOpacity style={styles.logout}>
+        <TouchableOpacity style={styles.logout} onPress={handleLogout}>
           <View style={styles.menuLeft}>
             <View style={styles.logoutCircle}>
               <IconSymbol name="arrow.right.square" size={18} color="red" />

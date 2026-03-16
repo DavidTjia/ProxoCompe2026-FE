@@ -15,7 +15,7 @@ export type PaginationParams = {
 
 export type ReportStatsParams = {
   "aggregate[avg]": string;
-  "filter[user_id][_eq]": string;
+  "filter[user_created][_eq]": string;
 };
 
 export type PaginatedResponse<T> = {
@@ -51,18 +51,22 @@ export type CreateReportForm = {
   privacy?: "PUBLIC" | "ONLY_ME";
 };
 
+export type LoginResponse = {
+  access_token: string;
+  refresh_token: string;
+};
+
 export type User = {
   id: string;
   username: string;
   email: string;
   phone?: string;
-  profile_picture?: string;
+  avatar?: string;
   created_at?: string;
 };
 
 export type CreateUserInput = {
-  name: string;
+  username: string;
   email: string;
-  phone?: string;
-  profile_picture?: string;
+  password: string;
 };

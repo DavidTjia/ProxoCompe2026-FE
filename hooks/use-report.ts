@@ -10,13 +10,13 @@ import {
 import { queryKeys } from "./keys";
 
 export const useReportStats = () => {
-  const user_id = "e629328d-6cd0-4597-8b85-6951989caaba";
+  const user_created = "9c484ff4-86f3-4df5-9d77-194c18e1da58";
   return useQuery({
-    queryKey: ["reportStats", user_id],
+    queryKey: ["reportStats", user_created],
     queryFn: async () => {
       const res = await reportApi.getReportStats({
         "aggregate[avg]": "pollution_score",
-        "filter[user_id][_eq]": user_id,
+        "filter[user_created][_eq]": user_created,
       });
 
       return res.data.data[0];
@@ -25,19 +25,31 @@ export const useReportStats = () => {
 };
 
 // Infinite scroll
-export const useInfiniteReports = (limit = 10) => {
-  const user_id = "e629328d-6cd0-4597-8b85-6951989caaba";
-
+export const useInfiniteReports = ({
+  limit = 10,
+  user_created,
+  privacy,
+}: {
+  limit?: number;
+  user_created?: string;
+  privacy?: "PUBLIC" | "ONLY_ME";
+}) => {
   return useInfiniteQuery({
-    queryKey: queryKeys.report.lists({ infinite: true, limit, user_id: "" }),
+    queryKey: queryKeys.report.lists({
+      infinite: true,
+      limit,
+      user_created,
+      privacy,
+    }),
     queryFn: async ({ pageParam = 1 }) => {
       const res = await reportApi.getReports({
         page: pageParam,
         limit,
         meta: "*",
         sort: "-date_created",
-        "filter[user_id][_eq]": user_id,
-        fields: "*,user_id.username",
+        "filter[user_created][_eq]": user_created,
+        "filter[privacy][_eq]": privacy,
+        fields: "*,user_created.username",
       });
       return res.data;
     },

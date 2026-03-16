@@ -33,7 +33,9 @@ export default function HistoryScreen() {
     isFetchingNextPage,
     hasNextPage,
     error,
-  } = useInfiniteReports();
+  } = useInfiniteReports({
+    user_created: "",
+  });
 
   if (error || reportStatsError) {
     Alert.alert(
@@ -46,13 +48,13 @@ export default function HistoryScreen() {
   const totalReports = data?.pages[0]?.meta?.total_count || 0;
   const averageScore = Number(reportStats?.avg?.pollution_score || 0);
 
-  const handleDetailsPress = (report: Report & { user_id?: User }) => {
-    const { user_id, ...rest } = report;
+  const handleDetailsPress = (report: Report & { user_created?: User }) => {
+    const { user_created, ...rest } = report;
     router.push({
       pathname: "/report-detail",
       params: {
         ...rest,
-        username: user_id?.username,
+        username: user_created?.username,
       },
     });
   };

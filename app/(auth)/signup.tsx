@@ -1,30 +1,34 @@
+import { ThemedView } from "@/components/themed-view";
+import { useRegister } from "@/hooks/use-user";
 import { Ionicons } from "@expo/vector-icons";
 import Checkbox from "expo-checkbox";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  ToastAndroid,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SignupScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
   const [agree, setAgree] = useState(false);
+
+  const { mutate, isPending, error } = useRegister();
 
   const handleSignup = async () => {
     if (!username || !email || !password || !confirmPassword) {
@@ -41,42 +45,59 @@ export default function SignupScreen() {
       Alert.alert("Error", "You must agree to Terms");
       return;
     }
-    console.log("Signing up with:", { username, email, password });
+    // console.log("Signing up with:", { username, email, password });
 
-    try {
-      const res = await fetch(
-        `${process.env.EXPO_PUBLIC_BASE_API_URL}/items/users`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.EXPO_PUBLIC_BASE_API_KEY}`,
-          },
-          body: JSON.stringify({
-            email: email,
-            password: password,
-            username: username,
-          }),
+    mutate(
+      { email, password, username },
+      {
+        onSuccess: () => {
+          ToastAndroid.show("Account created successfully", ToastAndroid.SHORT);
+          router.replace("/(auth)/signin");
         },
-      );
+        onError: (error) => {
+          Alert.alert("Error Signup", error.message);
+        },
+      },
+    );
+    // try {
+    //   const res = await fetch(
+    //     `${process.env.EXPO_PUBLIC_BASE_API_URL}/items/users`,
+    //     {
+    //       method: "POST",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         Authorization: `Bearer ${process.env.EXPO_PUBLIC_BASE_API_KEY}`,
+    //       },
+    //       body: JSON.stringify({
+    //         email: email,
+    //         password: password,
+    //         username: username,
+    //       }),
+    //     },
+    //   );
 
-      const data = await res.json();
+    //   const data = await res.json();
 
-      if (res.status === 200 || res.status === 201) {
-        Alert.alert("Success", "Account created successfully");
+    //   if (res.status === 200 || res.status === 201) {
+    //     Alert.alert("Success", "Account created successfully");
 
-        router.replace("/(auth)/signin");
-      } else {
-        Alert.alert("Signup Failed", data?.errors?.[0]?.message || "Error");
-      }
-    } catch (error) {
-      console.log(error);
-      Alert.alert("Error", "Cannot connect to server");
-    }
+    //     router.replace("/(auth)/signin");
+    //   } else {
+    //     Alert.alert("Signup Failed", data?.errors?.[0]?.message || "Error");
+    //   }
+    // } catch (error) {
+    //   console.log(error);
+    //   Alert.alert("Error", "Cannot connect to server");
+    // }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ThemedView
+      style={[
+        styles.container,
+        { paddingTop: insets.top, paddingBottom: insets.bottom },
+      ]}
+    >
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.wrapper}>
           {/* Back Button */}
@@ -185,14 +206,13 @@ export default function SignupScreen() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#E6DCC8",
   },
 
   wrapper: {

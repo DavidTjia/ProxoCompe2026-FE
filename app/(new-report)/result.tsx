@@ -52,7 +52,7 @@ const ReportResultScreen = () => {
         pollution_score: aiResponse.pollutionScore,
         ai_summary: aiResponse.summary,
         privacy: mode,
-        user_id: "c8b79bb3-4dc7-4124-a5b5-957c33914201",
+        user_id: "9c484ff4-86f3-4df5-9d77-194c18e1da58",
       },
       {
         onError(error) {

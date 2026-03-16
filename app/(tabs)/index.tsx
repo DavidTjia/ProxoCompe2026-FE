@@ -1,20 +1,25 @@
-import {
-  CommunityFeedCard,
-} from "@/components/community-feed-card";
+import { CommunityFeedCard } from "@/components/community-feed-card";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import {
-  TopRegionsCard,
-  RegionData,
-} from "@/components/top-regions-card";
+import { RegionData, TopRegionsCard } from "@/components/top-regions-card";
 import { primaryColor } from "@/constants/theme";
-import { Report } from "@/types";
+import { useInfiniteReports } from "@/hooks/use-report";
+import { Report, User } from "@/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { getItemAsync } from "expo-secure-store";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  ListRenderItem,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // ── Mock Data ──────────────────────────────────────────────
@@ -25,145 +30,168 @@ const MOCK_REGIONS: RegionData[] = [
   { name: "West Industrial", score: 6.8 },
 ];
 
-const MOCK_FEED_REPORTS: Report[] = [
-  {
-    id: "f1",
-    image:
-      "https://images.unsplash.com/photo-1526749837599-b4eba9fd855e?w=600",
-    title: "Chemical Odor Alert",
-    description:
-      "Significant chemical odor detected near the main factory outlet. Visibility is reduced by...",
-    latitude: -6.2,
-    longitude: 106.8,
-    pollution_score: 5.0,
-    rating: 4.5,
-    status: "PUBLISHED",
-    created_at: "2023-10-24T10:45:00Z",
-    ai_summary: "Chemical odor detected near factory.",
-    privacy: "PUBLIC",
-    location_name: "Old Industrial Zone",
-    severity: "CRITICAL",
-  },
-  {
-    id: "f2",
-    image:
-      "https://images.unsplash.com/photo-1493673272479-a20888bcee10?w=600",
-    title: "River Accumulation",
-    description:
-      "Plastic accumulation near the river bend. Needs immediate cleanup before the upcoming rain.",
-    latitude: -6.2,
-    longitude: 106.8,
-    pollution_score: 2.8,
-    rating: 4.5,
-    status: "PUBLISHED",
-    created_at: "2023-10-20T14:30:00Z",
-    ai_summary: "Plastic accumulation near river bend.",
-    privacy: "PUBLIC",
-    location_name: "Green Valley Creek",
-    severity: "MODERATE",
-  },
-];
-
 // ── Component ──────────────────────────────────────────────
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const totalReports = 14; // TODO: fetch from API
+  const [user, setUser] = useState<User | null>(null);
+  const {
+    data,
+    fetchNextPage,
+    isLoading,
+    refetch,
+    isRefetching,
+    isFetchingNextPage,
+    hasNextPage,
+    error,
+  } = useInfiniteReports({
+    privacy: "PUBLIC",
+  });
 
-  function handleCardPress(report: Report) {
+  const allReports = data?.pages.flatMap((page) => page.data) || [];
+  const totalReports = data?.pages[0]?.meta?.total_count || 0;
+
+  function handleCardPress(report: Report & { user_created?: User }) {
+    const { user_created, ...rest } = report;
     router.push({
       pathname: "/report-detail",
       params: {
-        id: report.id,
-        image: report.image,
-        title: report.title,
-        description: report.description,
-        pollution_score: String(report.pollution_score),
-        rating: String(report.rating),
-        location_name: report.location_name ?? "",
-        severity: report.severity ?? "LOW",
-        ai_summary: report.ai_summary,
-        created_at: report.created_at,
-        latitude: String(report.latitude),
-        longitude: String(report.longitude),
+        ...rest,
+        username: user_created?.username,
       },
     });
   }
 
+  const getUser = async () => {
+    const user = await getItemAsync("user");
+
+    if (user) {
+      setUser(JSON.parse(user));
+    }
+
+    return null;
+  };
+
+  useEffect(() => {
+    getUser();
+  }, []);
+
+  const avatar = user?.avatar
+    ? { uri: `${process.env.EXPO_PUBLIC_BASE_API_URL}/assets/${user.avatar}` }
+    : require("@/assets/images/profile-placeholder.png");
+
+  // ── Render Header (Hero + Regions) ───────────────────────
+  const renderHeader = () => (
+    <View>
+      {/* ── Hero Header ── */}
+      <LinearGradient
+        colors={["#1A3D1C", "#143416", "#0A1B0B", "#0A1B0B"]}
+        locations={[0, 0.3, 0.7, 1]}
+        start={{ x: 1, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={[styles.heroGradient, { paddingTop: insets.top + 16 }]}
+      >
+        {/* Greeting row */}
+        <View style={styles.greetingRow}>
+          <Image source={avatar} style={styles.avatar} contentFit="cover" />
+          <View style={styles.greetingBubble}>
+            <ThemedText style={styles.greetingText}>
+              Hello, {user?.username || "User"}
+            </ThemedText>
+          </View>
+        </View>
+
+        {/* Report count card */}
+        <View style={styles.reportCountCard}>
+          <View style={styles.reportLabelRow}>
+            <MaterialIcons
+              name="description"
+              size={14}
+              color="rgba(255,255,255,0.7)"
+            />
+            <ThemedText style={styles.reportLabel}>REPORTS</ThemedText>
+          </View>
+          <ThemedText style={styles.reportCount}>{totalReports}</ThemedText>
+        </View>
+      </LinearGradient>
+
+      {/* ── Top 10 Regions ── */}
+      <View style={styles.section}>
+        <TopRegionsCard
+          regions={MOCK_REGIONS}
+          onViewFullAnalysis={() => {
+            console.log("View full analysis");
+          }}
+        />
+      </View>
+
+      {/* ── Community Feed Header ── */}
+      <View style={[styles.section, { marginBottom: 8 }]}>
+        <View style={styles.feedHeader}>
+          <ThemedText style={styles.feedTitle}>Community Feed</ThemedText>
+          <Pressable>
+            <ThemedText style={styles.feedFilter}>Most Recent</ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  );
+
+  // ── Render Footer (Load More) ────────────────────────────
+  const renderFooter = () => {
+    if (!isFetchingNextPage) return null;
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color={primaryColor} />
+      </View>
+    );
+  };
+
+  // ── Render Item ──────────────────────────────────────────
+  const renderItem: ListRenderItem<Report> = ({ item }) => (
+    <View style={{ paddingHorizontal: 16 }}>
+      <CommunityFeedCard
+        report={item}
+        onCardPress={handleCardPress}
+        onCommentPress={(r) => console.log("Comment on:", r.id)}
+        onReportPress={(r) => console.log("Report:", r.id)}
+      />
+    </View>
+  );
+
+  if (isLoading) {
+    return (
+      <ThemedView style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color={primaryColor} />
+      </ThemedView>
+    );
+  }
+
   return (
     <ThemedView style={styles.container}>
-      <ScrollView
+      <FlatList
+        data={allReports}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* ── Hero Header ── */}
-        <LinearGradient
-          colors={[primaryColor, "#1B4B1E", "#2A5C2E"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.heroGradient, { paddingTop: insets.top + 16 }]}
-        >
-          {/* Greeting row */}
-          <View style={styles.greetingRow}>
-            <Image
-              source={require("@/assets/images/profile-placeholder.png")}
-              style={styles.avatar}
-              contentFit="cover"
-            />
-            <View style={styles.greetingBubble}>
-              <ThemedText style={styles.greetingText}>Hello, User</ThemedText>
-            </View>
-          </View>
-
-          {/* Report count card */}
-          <View style={styles.reportCountCard}>
-            <View style={styles.reportLabelRow}>
-              <MaterialIcons
-                name="description"
-                size={14}
-                color="rgba(255,255,255,0.7)"
-              />
-              <ThemedText style={styles.reportLabel}>REPORTS</ThemedText>
-            </View>
-            <ThemedText style={styles.reportCount}>{totalReports}</ThemedText>
-          </View>
-        </LinearGradient>
-
-        {/* ── Top 10 Regions ── */}
-        <View style={styles.section}>
-          <TopRegionsCard
-            regions={MOCK_REGIONS}
-            onViewFullAnalysis={() => {
-              // TODO: navigate to full analysis
-              console.log("View full analysis");
-            }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor={primaryColor}
+            colors={[primaryColor]}
           />
-        </View>
-
-        {/* ── Community Feed ── */}
-        <View style={styles.section}>
-          <View style={styles.feedHeader}>
-            <ThemedText style={styles.feedTitle}>Community Feed</ThemedText>
-            <Pressable>
-              <ThemedText style={styles.feedFilter}>Most Recent</ThemedText>
-            </Pressable>
-          </View>
-
-          {MOCK_FEED_REPORTS.map((report) => (
-            <CommunityFeedCard
-              key={report.id}
-              report={report}
-              onCardPress={handleCardPress}
-              onCommentPress={(r) =>
-                console.log("Comment on:", r.id)
-              }
-              onReportPress={(r) =>
-                console.log("Report:", r.id)
-              }
-            />
-          ))}
-        </View>
-      </ScrollView>
+        }
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        }}
+        onEndReachedThreshold={0.5}
+      />
     </ThemedView>
   );
 }
@@ -174,8 +202,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollContent: {
-    paddingBottom: 100,
+  centerContent: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  listContent: {
+    paddingBottom: 16,
   },
 
   // Hero
@@ -262,5 +294,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "500",
     color: "#687076",
+  },
+
+  // Footer loader
+  footerLoader: {
+    paddingVertical: 20,
+    alignItems: "center",
   },
 });

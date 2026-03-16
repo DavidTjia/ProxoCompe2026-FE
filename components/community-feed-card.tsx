@@ -1,11 +1,15 @@
 import { primaryColor } from "@/constants/theme";
 import { Report } from "@/types";
+import { getPollutionStatus } from "@/utils/status-mapping";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import Color from "color";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import { reverseGeocodeAsync } from "expo-location";
+import React, { useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { ThemedText } from "./themed-text";
+import { IconSymbol } from "./ui/icon-symbol";
 
 type Props = {
   report: Report;
@@ -14,39 +18,44 @@ type Props = {
   onReportPress?: (report: Report) => void;
 };
 
-const SEVERITY_CONFIG = {
-  CRITICAL: {
-    color: "#E53935",
-    backgroundColor: "#FFCDD2",
-    icon: "warning" as const,
-  },
-  MODERATE: {
-    color: "#F57C00",
-    backgroundColor: "#FFE0B2",
-    icon: "error-outline" as const,
-  },
-  LOW: {
-    color: "#43A047",
-    backgroundColor: "#C8E6C9",
-    icon: "check-circle-outline" as const,
-  },
-};
-
 export function CommunityFeedCard({
   report,
   onCardPress,
   onCommentPress,
   onReportPress,
 }: Props) {
-  const severity = report.severity ?? "LOW";
-  const config = SEVERITY_CONFIG[severity];
+  const pollutionStatus = getPollutionStatus(
+    Number(report?.pollution_score || 0),
+  );
+  const [address, setAddress] = useState("");
+
+  const getAddress = async () => {
+    try {
+      const { latitude, longitude } = report;
+      const address = await reverseGeocodeAsync({
+        latitude: Number(latitude),
+        longitude: Number(longitude),
+      });
+
+      setAddress(address?.[0]?.formattedAddress || "");
+    } catch (error) {
+      console.log("error address", error);
+    }
+  };
+
+  useEffect(() => {
+    console.log("ss :", pollutionStatus);
+    getAddress();
+  }, []);
 
   return (
     <Pressable style={styles.card} onPress={() => onCardPress?.(report)}>
       {/* Image with overlay */}
       <View style={styles.imageContainer}>
         <Image
-          source={{ uri: report.image }}
+          source={{
+            uri: `${process.env.EXPO_PUBLIC_BASE_API_URL}/assets/${report.photo}`,
+          }}
           style={styles.image}
           contentFit="cover"
         />
@@ -59,20 +68,36 @@ export function CommunityFeedCard({
         <View
           style={[
             styles.severityBadge,
-            { backgroundColor: config.backgroundColor },
+            {
+              backgroundColor: Color(pollutionStatus.color).lighten(0.5).hex(),
+            },
           ]}
         >
-          <MaterialIcons name={config.icon} size={14} color={config.color} />
-          <ThemedText style={[styles.severityText, { color: config.color }]}>
-            {severity}
+          <IconSymbol
+            iconSet="material-community"
+            name={pollutionStatus.iconName}
+            size={14}
+            color={pollutionStatus.color}
+          />
+          <ThemedText
+            style={[styles.severityText, { color: pollutionStatus.color }]}
+          >
+            {pollutionStatus.level}
           </ThemedText>
         </View>
 
         {/* Score badge */}
         <View style={styles.scoreBadge}>
           <ThemedText style={styles.scoreLabel}>SCORE</ThemedText>
-          <ThemedText style={styles.scoreValue}>
-            {report.pollution_score.toFixed(1)}
+          <ThemedText
+            style={[
+              styles.scoreValue,
+              {
+                color: pollutionStatus.color,
+              },
+            ]}
+          >
+            {Number(report.pollution_score || 0).toFixed(1)}
           </ThemedText>
         </View>
 
@@ -80,7 +105,7 @@ export function CommunityFeedCard({
         <View style={styles.locationRow}>
           <MaterialIcons name="place" size={14} color="#FFFFFF" />
           <ThemedText style={styles.locationText} numberOfLines={1}>
-            {report.location_name ?? "Unknown Location"}
+            {address ?? "Unknown Location"}
           </ThemedText>
         </View>
       </View>
@@ -88,7 +113,7 @@ export function CommunityFeedCard({
       {/* Description */}
       <View style={styles.descriptionContainer}>
         <ThemedText style={styles.description} numberOfLines={2}>
-          {report.description}
+          {report.ai_summary}
         </ThemedText>
       </View>
 
@@ -97,7 +122,7 @@ export function CommunityFeedCard({
         <View style={styles.ratingPill}>
           <MaterialIcons name="star" size={16} color="#D4A017" />
           <ThemedText style={styles.ratingText}>
-            {report.rating.toFixed(1)}
+            {Number(report.avg_rating || 0).toFixed(1)}
           </ThemedText>
         </View>
 
@@ -105,11 +130,7 @@ export function CommunityFeedCard({
           style={styles.actionPill}
           onPress={() => onCommentPress?.(report)}
         >
-          <MaterialIcons
-            name="chat-bubble-outline"
-            size={14}
-            color="#555"
-          />
+          <MaterialIcons name="chat-bubble-outline" size={14} color="#555" />
           <ThemedText style={styles.actionText}>Comment</ThemedText>
         </Pressable>
 
@@ -117,7 +138,12 @@ export function CommunityFeedCard({
           style={[styles.actionPill, styles.reportPill]}
           onPress={() => onReportPress?.(report)}
         >
-          <MaterialIcons name="report-problem" size={14} color={primaryColor} />
+          <IconSymbol
+            name="exclamationmark.circle"
+            iconSet="material-community"
+            size={14}
+            color={primaryColor}
+          />
           <ThemedText style={[styles.actionText, { color: primaryColor }]}>
             Report
           </ThemedText>
@@ -208,6 +234,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 3,
+    maxWidth: "70%",
   },
   locationText: {
     fontSize: 12,

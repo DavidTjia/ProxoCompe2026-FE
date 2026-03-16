@@ -54,7 +54,6 @@ const MATERIAL_MAPPING = {
   "star.fill": "star",
   "star.outline": "star-outline",
   "bubble.left": "chat-bubble-outline",
-  "exclamationmark.circle": "report-problem",
   mappin: "place",
   "chart.bar": "bar-chart",
   "arrow.right.square": "logout",
@@ -63,6 +62,7 @@ const MATERIAL_MAPPING = {
 
 // Material Community Icons
 const MATERIAL_COMMUNITY_MAPPING = {
+  "exclamationmark.circle": "alert-octagon-outline",
   "exclamationmark.triangle": "alert-outline",
   leaf: "leaf",
   plus: "plus-circle",

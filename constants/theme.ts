@@ -6,6 +6,7 @@
 import { Platform } from "react-native";
 
 export const primaryColor = "#143416";
+export const secondaryColor = "#92B775";
 const tintColorLight = primaryColor;
 const tintColorDark = primaryColor;
 // const tintColorDark = "#fff";
