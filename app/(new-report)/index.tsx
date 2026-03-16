@@ -6,6 +6,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors, primaryColor } from "@/constants/theme";
 import { ReportForm, reportSchema } from "@/forms";
 import { getCurrentLocation } from "@/utils/current-location";
+import { analyzePollution } from "@/utils/gemini-ai";
 import { openCamera, openGallery } from "@/utils/image-picker";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -113,9 +114,9 @@ export default function NewReportScreen() {
     const { photo, ...payload } = data;
 
     setLoading(true);
-    // const aiResponse = await analyzePollution(JSON.stringify(payload), base64);
+    const aiResponse = await analyzePollution(JSON.stringify(payload), base64);
     //Sementara pake dummy for hemat token kwokowkwo :p
-    const aiResponse = `{"pollutionScore":0,"summary":"DATA INVALID: Description is gibberish and image shows no discernible pollution. Cannot perform environmental analysis."}`;
+    // const aiResponse = `{"pollutionScore":0,"summary":"DATA INVALID: Description is gibberish and image shows no discernible pollution. Cannot perform environmental analysis."}`;
 
     setLoading(false);
     router.replace({

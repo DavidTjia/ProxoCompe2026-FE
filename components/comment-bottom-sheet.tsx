@@ -84,7 +84,7 @@ function CommentItem({ comment }: { comment: Comment }) {
 const CommentBottomSheetInner = forwardRef<BottomSheet, Props>(
   ({ reportId }, ref) => {
     const [commentText, setCommentText] = useState("");
-    const snapPoints = useMemo(() => ["60%", "90%"], []);
+    const snapPoints = useMemo(() => ["53%", "90%"], []);
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
       useCommentsByReport(reportId);
@@ -149,59 +149,62 @@ const CommentBottomSheetInner = forwardRef<BottomSheet, Props>(
         enablePanDownToClose
         backgroundStyle={styles.sheetBackground}
         handleIndicatorStyle={styles.handleIndicator}
-        keyboardBehavior="interactive"
+        keyboardBehavior="extend"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
+        enableDynamicSizing={false}
       >
-        {/* Header */}
-        <BottomSheetView style={styles.headerContainer}>
-          <Text style={styles.title}>Comments</Text>
-          <Text style={styles.commentCount}>
-            {data?.pages[0]?.meta?.total_count || 0} comments
-          </Text>
-        </BottomSheetView>
+        <BottomSheetView style={{ flex: 1 }}>
+          {/* Header */}
+          <View style={styles.headerContainer}>
+            <Text style={styles.title}>Comments</Text>
+            <Text style={styles.commentCount}>
+              {data?.pages[0]?.meta?.total_count || 0} comments
+            </Text>
+          </View>
 
-        {/* Comments list */}
-        <BottomSheetFlatList
-          data={allComments}
-          keyExtractor={(item: Comment) => item.id}
-          renderItem={renderComment}
-          ListEmptyComponent={renderEmpty}
-          ListFooterComponent={renderFooter}
-          contentContainerStyle={styles.listContent}
-          onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) {
-              fetchNextPage();
-            }
-          }}
-          onEndReachedThreshold={0.3}
-        />
-
-        {/* Input bar */}
-        <BottomSheetView style={styles.inputBar}>
-          <BottomSheetTextInput
-            style={styles.textInput}
-            placeholder="Write a comment..."
-            placeholderTextColor="#9CA3AF"
-            value={commentText}
-            onChangeText={setCommentText}
-            multiline
-            maxLength={500}
+          {/* Comments list */}
+          <BottomSheetFlatList
+            data={allComments}
+            keyExtractor={(item: Comment) => item.id}
+            renderItem={renderComment}
+            ListEmptyComponent={renderEmpty}
+            ListFooterComponent={renderFooter}
+            contentContainerStyle={styles.listContent}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+              }
+            }}
+            onEndReachedThreshold={0.3}
           />
-          <Pressable
-            style={[
-              styles.sendBtn,
-              (!commentText.trim() || isSubmitting) && styles.sendBtnDisabled,
-            ]}
-            onPress={handleSubmit}
-            disabled={!commentText.trim() || isSubmitting}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <MaterialIcons name="send" size={20} color="#FFFFFF" />
-            )}
-          </Pressable>
+
+          {/* Input bar */}
+          <View style={styles.inputBar}>
+            <BottomSheetTextInput
+              style={styles.textInput}
+              placeholder="Write a comment..."
+              placeholderTextColor="#9CA3AF"
+              value={commentText}
+              onChangeText={setCommentText}
+              multiline
+              maxLength={500}
+            />
+            <Pressable
+              style={[
+                styles.sendBtn,
+                (!commentText.trim() || isSubmitting) && styles.sendBtnDisabled,
+              ]}
+              onPress={handleSubmit}
+              disabled={!commentText.trim() || isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <MaterialIcons name="send" size={20} color="#FFFFFF" />
+              )}
+            </Pressable>
+          </View>
         </BottomSheetView>
       </BottomSheet>
     );
@@ -333,7 +336,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#F3F4F6",
     gap: 10,
-    backgroundColor: "#FFFFFF",
   },
   textInput: {
     flex: 1,
