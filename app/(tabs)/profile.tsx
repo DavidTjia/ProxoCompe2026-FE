@@ -66,7 +66,7 @@ export default function ProfileScreen() {
             <Text style={styles.reportTitle}>REPORTS</Text>
           </View>
 
-          <Text style={styles.reportNumber}>128</Text>
+          <Text style={styles.reportNumber}>{reportStats?.count.id}</Text>
         </View>
 
         {/* ACCOUNT SETTINGS */}
