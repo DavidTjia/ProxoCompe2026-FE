@@ -58,7 +58,7 @@ export const useInfiniteReports = ({
         sort: "-date_created",
         "filter[user_created][_eq]": user_created || undefined,
         "filter[privacy][_eq]": privacy || undefined,
-        fields: "*,user_created.username",
+        fields: "*,user_created.username,user_created.id",
       });
       return res.data;
     },

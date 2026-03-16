@@ -37,6 +37,7 @@ export type Report = {
   ai_summary: string;
   privacy: "PUBLIC" | "ONLY_ME";
   username?: string;
+  user_id?: string;
 };
 
 export type CreateReportForm = {
@@ -46,7 +47,6 @@ export type CreateReportForm = {
   longitude: number;
   pollution_score: number;
   ai_summary: string;
-  user_id: string;
   privacy?: "PUBLIC" | "ONLY_ME";
 };
 

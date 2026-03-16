@@ -4,7 +4,7 @@ import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { primaryColor } from "@/constants/theme";
 import { useDeleteReport } from "@/hooks/use-report";
-import { Report } from "@/types";
+import { Report, User } from "@/types";
 import {
   getPollutionStatus,
   reportPrivacyStatus,
@@ -12,6 +12,7 @@ import {
 import { Image } from "expo-image";
 import { reverseGeocodeAsync } from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { getItemAsync } from "expo-secure-store";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -26,7 +27,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function ReportDetailScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<Report>();
-
+  const [user, setUser] = useState<User | null>(null);
   const { mutate: deleteReport } = useDeleteReport();
   const router = useRouter();
 
@@ -35,6 +36,8 @@ export default function ReportDetailScreen() {
   );
   const privacyStatus = reportPrivacyStatus[params.privacy];
   const [address, setAddress] = useState("");
+
+  const isUserReport = user?.id === params.user_id;
 
   const getAddress = async () => {
     try {
@@ -50,8 +53,19 @@ export default function ReportDetailScreen() {
     }
   };
 
+  const getUser = async () => {
+    const user = await getItemAsync("user");
+
+    if (user) {
+      setUser(JSON.parse(user));
+    }
+
+    return null;
+  };
+
   useEffect(() => {
     getAddress();
+    getUser();
   }, []);
   const handleDelete = () => {
     Alert.alert(
@@ -83,10 +97,14 @@ export default function ReportDetailScreen() {
     >
       <View style={styles.headerContainer}>
         <HeaderCst title="Report Detail" />
-
-        <TouchableOpacity style={styles.headerDeleteBtn} onPress={handleDelete}>
-          <IconSymbol name="trash" size={22} color="red" />
-        </TouchableOpacity>
+        {isUserReport && (
+          <TouchableOpacity
+            style={styles.headerDeleteBtn}
+            onPress={handleDelete}
+          >
+            <IconSymbol name="trash" size={22} color="red" />
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
@@ -181,7 +199,7 @@ export default function ReportDetailScreen() {
         {params.privacy === "PUBLIC" && (
           <View style={styles.actions}>
             <TouchableOpacity style={styles.actionBtn}>
-              <IconSymbol name="star.outline" size={20} color={primaryColor} />
+              <IconSymbol name="star" size={20} color={primaryColor} />
               <ThemedText>Rate</ThemedText>
             </TouchableOpacity>
 

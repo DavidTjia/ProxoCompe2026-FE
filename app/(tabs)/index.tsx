@@ -66,6 +66,7 @@ export default function HomeScreen() {
       params: {
         ...rest,
         username: user_created?.username,
+        user_id: user_created?.id,
       },
     });
   }
@@ -216,6 +217,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 16,
+    gap: 12,
   },
 
   // Hero

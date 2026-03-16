@@ -52,12 +52,13 @@ const MATERIAL_MAPPING = {
   "doc.text": "description",
   "arrow.up.right": "north-east",
   "star.fill": "star",
-  "star.outline": "star-outline",
+  star: "star-outline",
   "bubble.left": "chat-bubble-outline",
   mappin: "place",
   "chart.bar": "bar-chart",
   "arrow.right.square": "logout",
   checkmark: "save",
+  trash: "delete",
 } as MaterialMapping;
 
 // Material Community Icons
