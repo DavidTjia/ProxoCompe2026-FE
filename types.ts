@@ -14,8 +14,7 @@ export type PaginationParams = {
 };
 
 export type ReportStatsParams = {
-  "aggregate[avg]": string;
-  "filter[user_created][_eq]": string;
+  [key: string]: string | number | boolean | undefined;
 };
 
 export type PaginatedResponse<T> = {

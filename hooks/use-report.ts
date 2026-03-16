@@ -9,18 +9,25 @@ import {
 } from "@tanstack/react-query";
 import { queryKeys } from "./keys";
 
-export const useReportStats = () => {
-  const user_created = "9c484ff4-86f3-4df5-9d77-194c18e1da58";
+export const useReportStats = ({
+  user_created,
+  enabled = true,
+}: {
+  user_created?: string;
+  enabled?: boolean;
+}) => {
   return useQuery({
     queryKey: ["reportStats", user_created],
     queryFn: async () => {
       const res = await reportApi.getReportStats({
         "aggregate[avg]": "pollution_score",
+        "aggregate[count]": "id",
         "filter[user_created][_eq]": user_created,
       });
 
       return res.data.data[0];
     },
+    enabled,
   });
 };
 
@@ -29,10 +36,12 @@ export const useInfiniteReports = ({
   limit = 10,
   user_created,
   privacy,
+  enabled = true,
 }: {
   limit?: number;
   user_created?: string;
   privacy?: "PUBLIC" | "ONLY_ME";
+  enabled?: boolean;
 }) => {
   return useInfiniteQuery({
     queryKey: queryKeys.report.lists({
@@ -59,6 +68,7 @@ export const useInfiniteReports = ({
       return nextPage <= totalPages ? nextPage : undefined;
     },
     initialPageParam: 1,
+    enabled,
   });
 };
 

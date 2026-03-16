@@ -18,7 +18,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function ProfileScreen() {
   const [preview, setPreview] = useState(false);
   const { data: user, error } = useGetUser();
-  const { data: reportStats } = useReportStats();
+  const { data: reportStats } = useReportStats({
+    user_created: user?.id,
+    enabled: !!user?.id,
+  });
   const { mutate } = useLogout();
 
   if (error) {

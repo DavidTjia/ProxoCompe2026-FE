@@ -5,7 +5,10 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Color from "color";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { reverseGeocodeAsync } from "expo-location";
+import {
+  requestForegroundPermissionsAsync,
+  reverseGeocodeAsync,
+} from "expo-location";
 import React, { useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { ThemedText } from "./themed-text";
@@ -32,6 +35,9 @@ export function CommunityFeedCard({
   const getAddress = async () => {
     try {
       const { latitude, longitude } = report;
+      const { status } = await requestForegroundPermissionsAsync();
+      if (status !== "granted") return;
+
       const address = await reverseGeocodeAsync({
         latitude: Number(latitude),
         longitude: Number(longitude),

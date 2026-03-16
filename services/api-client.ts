@@ -70,8 +70,15 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && originalRequest) {
-      //prevent infinite loop
+      if (originalRequest?.url?.startsWith("auth/")) {
+        return Promise.reject({
+          ...error,
+          message: error.response?.data?.errors?.[0]?.message || error.message,
+        });
+      }
+
       if (originalRequest._retry) {
+        //prevent infinite loop
         await deleteItemAsync("token");
         await deleteItemAsync("rf_token");
         await deleteItemAsync("user");
@@ -98,6 +105,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        console.log("refresh token");
         const refreshToken = await getItemAsync("rf_token");
 
         if (!refreshToken) {

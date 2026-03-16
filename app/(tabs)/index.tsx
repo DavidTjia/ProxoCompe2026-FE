@@ -3,7 +3,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { RegionData, TopRegionsCard } from "@/components/top-regions-card";
 import { primaryColor } from "@/constants/theme";
-import { useInfiniteReports } from "@/hooks/use-report";
+import { useInfiniteReports, useReportStats } from "@/hooks/use-report";
 import { Report, User } from "@/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
@@ -35,6 +35,16 @@ const MOCK_REGIONS: RegionData[] = [
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [user, setUser] = useState<User | null>(null);
+
+  const {
+    data: reportStats,
+    isLoading: isReportStatsLoading,
+    refetch: reportStatsRefetch,
+    error: reportStatsError,
+  } = useReportStats({
+    user_created: user?.id,
+    enabled: !!user?.id,
+  });
   const {
     data,
     fetchNextPage,
@@ -44,12 +54,10 @@ export default function HomeScreen() {
     isFetchingNextPage,
     hasNextPage,
     error,
-  } = useInfiniteReports({
-    privacy: "PUBLIC",
-  });
+  } = useInfiniteReports({ privacy: "PUBLIC" });
 
   const allReports = data?.pages.flatMap((page) => page.data) || [];
-  const totalReports = data?.pages[0]?.meta?.total_count || 0;
+  const totalReports = reportStats?.count.id || 0;
 
   function handleCardPress(report: Report & { user_created?: User }) {
     const { user_created, ...rest } = report;

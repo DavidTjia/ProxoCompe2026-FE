@@ -15,10 +15,9 @@ const reportApi = {
     apiClient.get<PaginatedResponse<Report>>("items/reports", { params }),
 
   getReportStats: (params?: ReportStatsParams) =>
-    apiClient.get<ApiResponse<{ avg: { pollution_score: string } }[]>>(
-      "items/reports",
-      { params },
-    ),
+    apiClient.get<
+      ApiResponse<{ avg: { pollution_score: string }; count: { id: number } }[]>
+    >("items/reports", { params }),
 
   createReports: (data: CreateReportForm) =>
     apiClient.post<ApiResponse<Report>>("items/reports", data),

@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { primaryColor } from "@/constants/theme";
 import { useRouter } from "expo-router";
+import { getItemAsync } from "expo-secure-store";
 import { useEffect } from "react";
 import { Image, StyleSheet, View } from "react-native";
 
@@ -8,8 +9,11 @@ const AppScreen = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.replace("/(auth)/signin");
+    const timer = setTimeout(async () => {
+      const user = await getItemAsync("user");
+
+      if (user) router.replace("/(tabs)");
+      else router.replace("/(auth)/signin");
     }, 2000);
 
     return () => clearTimeout(timer);

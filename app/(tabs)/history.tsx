@@ -6,7 +6,8 @@ import { primaryColor } from "@/constants/theme";
 import { useInfiniteReports, useReportStats } from "@/hooks/use-report";
 import { Report, User } from "@/types";
 import { router } from "expo-router";
-import React from "react";
+import { getItemAsync } from "expo-secure-store";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -19,11 +20,17 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HistoryScreen() {
   const insets = useSafeAreaInsets();
+  const [user, setUser] = useState<User | null>(null);
+
   const {
     data: reportStats,
     isLoading: isReportStatsLoading,
+    refetch: reportStatsRefetch,
     error: reportStatsError,
-  } = useReportStats();
+  } = useReportStats({
+    user_created: user?.id,
+    enabled: !!user?.id,
+  });
   const {
     data,
     fetchNextPage,
@@ -34,7 +41,8 @@ export default function HistoryScreen() {
     hasNextPage,
     error,
   } = useInfiniteReports({
-    user_created: "",
+    user_created: user?.id,
+    enabled: !!user?.id,
   });
 
   if (error || reportStatsError) {
@@ -45,7 +53,7 @@ export default function HistoryScreen() {
   }
 
   const allReports = data?.pages.flatMap((page) => page.data) || [];
-  const totalReports = data?.pages[0]?.meta?.total_count || 0;
+  const totalReports = data?.pages[0]?.meta?.filter_count || 0;
   const averageScore = Number(reportStats?.avg?.pollution_score || 0);
 
   const handleDetailsPress = (report: Report & { user_created?: User }) => {
@@ -57,6 +65,22 @@ export default function HistoryScreen() {
         username: user_created?.username,
       },
     });
+  };
+
+  const handleGetUser = async () => {
+    const user = await getItemAsync("user");
+    if (user) {
+      setUser(JSON.parse(user));
+    }
+  };
+
+  useEffect(() => {
+    handleGetUser();
+  }, []);
+
+  const handleRefresh = () => {
+    refetch();
+    reportStatsRefetch();
   };
 
   const renderHeader = () => (
@@ -92,7 +116,7 @@ export default function HistoryScreen() {
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
-            onRefresh={refetch}
+            onRefresh={handleRefresh}
             tintColor={primaryColor} //IOS spinner color
             colors={[primaryColor]} //Android spinner color
           />
