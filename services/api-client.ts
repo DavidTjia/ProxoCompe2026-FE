@@ -1,6 +1,7 @@
 import axios from "axios";
 import { router } from "expo-router";
 import { deleteItemAsync, getItemAsync, setItemAsync } from "expo-secure-store";
+import { ToastAndroid } from "react-native";
 
 const apiClient = axios.create({
   baseURL: `${process.env.EXPO_PUBLIC_BASE_API_URL}`,
@@ -31,7 +32,7 @@ const processQueue = (error: any, token: string | null = null) => {
 
 // Request interceptor
 apiClient.interceptors.request.use(async (config) => {
-  if (config.url === "/auth/refresh") {
+  if (config.url === "auth/refresh") {
     return config;
   }
 
@@ -48,7 +49,7 @@ apiClient.interceptors.request.use(async (config) => {
 // Response interceptor
 apiClient.interceptors.response.use(
   (response) => {
-    console.log("response :", response);
+    // console.log("response :", response);
     return response;
   },
   async (error) => {
@@ -83,6 +84,7 @@ apiClient.interceptors.response.use(
         await deleteItemAsync("rf_token");
         await deleteItemAsync("user");
 
+        ToastAndroid.show("Session expired", ToastAndroid.SHORT);
         router.replace("/(auth)/signin");
 
         return Promise.reject(error);
@@ -109,7 +111,10 @@ apiClient.interceptors.response.use(
         const refreshToken = await getItemAsync("rf_token");
 
         if (!refreshToken) {
-          throw new Error("No refresh token available");
+          return Promise.reject({
+            ...error,
+            message: "Refresh token not found",
+          });
         }
 
         // Hit endpoint refresh token
@@ -142,6 +147,7 @@ apiClient.interceptors.response.use(
         await deleteItemAsync("rf_token");
         await deleteItemAsync("user");
 
+        ToastAndroid.show("Session expired", ToastAndroid.SHORT);
         router.replace("/(auth)/signin");
 
         return Promise.reject(refreshError);

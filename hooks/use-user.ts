@@ -1,3 +1,4 @@
+import masterApi from "@/services/endpoints/master";
 import userApi from "@/services/endpoints/user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { deleteItemAsync, setItemAsync } from "expo-secure-store";
@@ -110,11 +111,17 @@ export const useUpdateUser = () => {
         avatar?: string;
       };
     }) => {
+      if (data.avatar) {
+        const resUpload = await masterApi.uploadImg(data.avatar);
+        data.avatar = resUpload.data.data.id;
+      }
+
       const res = await userApi.updateUser(data);
       return res.data.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
+      setItemAsync("user", JSON.stringify(data));
     },
   });
 };
