@@ -7,8 +7,8 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   requestForegroundPermissionsAsync,
-  reverseGeocodeAsync,
 } from "expo-location";
+import { getGeocodedAddress } from "@/utils/geocode";
 import React, { useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { ThemedText } from "./themed-text";
@@ -38,12 +38,12 @@ export function CommunityFeedCard({
       const { status } = await requestForegroundPermissionsAsync();
       if (status !== "granted") return;
 
-      const address = await reverseGeocodeAsync({
-        latitude: Number(latitude),
-        longitude: Number(longitude),
-      });
+      const formattedAddress = await getGeocodedAddress(
+        Number(latitude),
+        Number(longitude)
+      );
 
-      setAddress(address?.[0]?.formattedAddress || "");
+      setAddress(formattedAddress || "");
     } catch (error) {
       console.log("error address", error);
     }
