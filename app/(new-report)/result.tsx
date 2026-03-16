@@ -55,7 +55,7 @@ const ReportResultScreen = () => {
       },
       {
         onError(error) {
-          console.error(error);
+          console.log("error create report", error);
           Alert.alert("Error creating report", error.message);
         },
         onSuccess() {

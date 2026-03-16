@@ -71,7 +71,7 @@ export default function NewReportScreen() {
 
         await updateAddress(lat, lng);
       } catch (err) {
-        console.error("error get location", err);
+        console.log("error get location", err);
       }
     }
 

@@ -8,9 +8,9 @@ import { Report, User } from "@/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { getItemAsync } from "expo-secure-store";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -81,9 +81,9 @@ export default function HomeScreen() {
     return null;
   };
 
-  useEffect(() => {
+  useFocusEffect(() => {
     getUser();
-  }, []);
+  });
 
   const avatar = user?.avatar
     ? { uri: `${process.env.EXPO_PUBLIC_BASE_API_URL}/assets/${user.avatar}` }
