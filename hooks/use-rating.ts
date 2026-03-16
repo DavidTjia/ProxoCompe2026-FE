@@ -33,3 +33,22 @@ export const useCreateRating = () => {
     },
   });
 };
+
+export const useUpdateRating = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateRatingInput> }) => {
+      const res = await ratingApi.updateRating(id, data);
+      return res.data.data;
+    },
+    onSuccess: (_data, variables) => {
+      if (variables.data.report_id) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.rating.byReport(variables.data.report_id),
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.report.all });
+    },
+  });
+};

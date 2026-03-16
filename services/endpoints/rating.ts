@@ -13,6 +13,9 @@ const ratingApi = {
 
   createRating: (data: CreateRatingInput) =>
     apiClient.post<ApiResponse<Rating>>("items/ratings", data),
+  
+  updateRating: (id: string, data: Partial<CreateRatingInput>) =>
+    apiClient.patch<ApiResponse<Rating>>(`items/ratings/${id}`, data),
 };
 
 export default ratingApi;
