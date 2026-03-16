@@ -69,3 +69,29 @@ export type CreateUserInput = {
   email: string;
   password: string;
 };
+
+export type Rating = {
+  id: string;
+  report_id: string;
+  user_created: string;
+  score: number;
+  date_created: string;
+};
+
+export type CreateRatingInput = {
+  report_id: string;
+  score: number;
+};
+
+export type Comment = {
+  id: string;
+  report_id: string;
+  user_created: string | { username: string; avatar?: string };
+  content: string;
+  date_created: string;
+};
+
+export type CreateCommentInput = {
+  report_id: string;
+  content: string;
+};

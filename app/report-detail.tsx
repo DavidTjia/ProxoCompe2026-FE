@@ -1,19 +1,19 @@
+import { CommentBottomSheet } from "@/components/comment-bottom-sheet";
 import HeaderCst from "@/components/header-cst";
+import { RatingBottomSheet } from "@/components/rating-bottom-sheet";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { primaryColor } from "@/constants/theme";
 import { useDeleteReport } from "@/hooks/use-report";
 import { Report, User } from "@/types";
-import {
-  getPollutionStatus,
-  reportPrivacyStatus,
-} from "@/utils/status-mapping";
+import { getPollutionStatus } from "@/utils/status-mapping";
+import BottomSheet from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
 import { reverseGeocodeAsync } from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { getItemAsync } from "expo-secure-store";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -31,15 +31,17 @@ export default function ReportDetailScreen() {
   const { mutate: deleteReport } = useDeleteReport();
   const router = useRouter();
 
+  const ratingSheetRef = useRef<BottomSheet>(null);
+  const commentSheetRef = useRef<BottomSheet>(null);
+
   const pollutionStatus = getPollutionStatus(
     Number(params.pollution_score || 0),
   );
-  const privacyStatus = reportPrivacyStatus[params.privacy];
   const [address, setAddress] = useState("");
 
   const isUserReport = user?.id === params.user_id;
 
-  const getAddress = async () => {
+  const getAddress = useCallback(async () => {
     try {
       const { latitude, longitude } = params;
       const address = await reverseGeocodeAsync({
@@ -51,7 +53,7 @@ export default function ReportDetailScreen() {
     } catch (error) {
       console.log("error address", error);
     }
-  };
+  }, [params]);
 
   const getUser = async () => {
     const user = await getItemAsync("user");
@@ -66,7 +68,8 @@ export default function ReportDetailScreen() {
   useEffect(() => {
     getAddress();
     getUser();
-  }, []);
+  }, [getAddress]);
+
   const handleDelete = () => {
     Alert.alert(
       "Delete Report",
@@ -87,6 +90,14 @@ export default function ReportDetailScreen() {
       ],
     );
   };
+
+  const handleOpenRating = useCallback(() => {
+    ratingSheetRef.current?.snapToIndex(0);
+  }, []);
+
+  const handleOpenComments = useCallback(() => {
+    commentSheetRef.current?.snapToIndex(0);
+  }, []);
 
   return (
     <ThemedView
@@ -198,12 +209,18 @@ export default function ReportDetailScreen() {
         {/* ACTION BUTTONS */}
         {params.privacy === "PUBLIC" && (
           <View style={styles.actions}>
-            <TouchableOpacity style={styles.actionBtn}>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={handleOpenRating}
+            >
               <IconSymbol name="star" size={20} color={primaryColor} />
               <ThemedText>Rate</ThemedText>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionBtn}>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={handleOpenComments}
+            >
               <IconSymbol name="bubble.left" size={20} color={primaryColor} />
               <ThemedText>Comment</ThemedText>
             </TouchableOpacity>
@@ -220,6 +237,13 @@ export default function ReportDetailScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Bottom Sheets */}
+      <RatingBottomSheet ref={ratingSheetRef} reportId={params.id as string} />
+      <CommentBottomSheet
+        ref={commentSheetRef}
+        reportId={params.id as string}
+      />
     </ThemedView>
   );
 }
