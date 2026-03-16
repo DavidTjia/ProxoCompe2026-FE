@@ -18,6 +18,7 @@ type Props = {
   report: Report;
   onCardPress?: (report: Report) => void;
   onCommentPress?: (report: Report) => void;
+  onRatingPress?: (report: Report) => void;
   onReportPress?: (report: Report) => void;
 };
 
@@ -25,6 +26,7 @@ export function CommunityFeedCard({
   report,
   onCardPress,
   onCommentPress,
+  onRatingPress,
   onReportPress,
 }: Props) {
   const pollutionStatus = getPollutionStatus(
@@ -124,12 +126,15 @@ export function CommunityFeedCard({
 
       {/* Action row */}
       <View style={styles.actionRow}>
-        <View style={styles.ratingPill}>
+        <Pressable
+          style={styles.ratingPill}
+          onPress={() => onRatingPress?.(report)}
+        >
           <MaterialIcons name="star" size={16} color="#D4A017" />
           <ThemedText style={styles.ratingText}>
             {Number(report.avg_rating || 0).toFixed(1)}
           </ThemedText>
-        </View>
+        </Pressable>
 
         <Pressable
           style={styles.actionPill}

@@ -1,4 +1,6 @@
+import { CommentBottomSheet } from "@/components/comment-bottom-sheet";
 import { CommunityFeedCard } from "@/components/community-feed-card";
+import { RatingBottomSheet } from "@/components/rating-bottom-sheet";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { RegionData, TopRegionsCard } from "@/components/top-regions-card";
@@ -6,11 +8,12 @@ import { primaryColor } from "@/constants/theme";
 import { useInfiniteReports, useReportStats } from "@/hooks/use-report";
 import { Report, User } from "@/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import BottomSheet from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import { getItemAsync } from "expo-secure-store";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -35,6 +38,10 @@ const MOCK_REGIONS: RegionData[] = [
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [user, setUser] = useState<User | null>(null);
+
+  const [selectedReportId, setSelectedReportId] = useState<string>("");
+  const commentSheetRef = useRef<BottomSheet>(null);
+  const ratingSheetRef = useRef<BottomSheet>(null);
 
   const {
     data: reportStats,
@@ -161,7 +168,14 @@ export default function HomeScreen() {
       <CommunityFeedCard
         report={item}
         onCardPress={handleCardPress}
-        onCommentPress={(r) => console.log("Comment on:", r.id)}
+        onCommentPress={(r) => {
+          setSelectedReportId(r.id);
+          commentSheetRef.current?.snapToIndex(0);
+        }}
+        onRatingPress={(r) => {
+          setSelectedReportId(r.id);
+          ratingSheetRef.current?.snapToIndex(0);
+        }}
         onReportPress={(r) => console.log("Report:", r.id)}
       />
     </View>
@@ -200,6 +214,9 @@ export default function HomeScreen() {
         }}
         onEndReachedThreshold={0.5}
       />
+
+      <CommentBottomSheet reportId={selectedReportId} ref={commentSheetRef} />
+      <RatingBottomSheet reportId={selectedReportId} ref={ratingSheetRef} />
     </ThemedView>
   );
 }
