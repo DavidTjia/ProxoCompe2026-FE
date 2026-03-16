@@ -75,7 +75,7 @@ function CommentItem({ comment }: { comment: Comment }) {
             {formatTimeAgo(comment.date_created)}
           </Text>
         </View>
-        <Text style={styles.commentText}>{comment.comment_text || (comment as any).comment || (comment as any).text}</Text>
+        <Text style={styles.commentText}>{comment.comment_text}</Text>
       </View>
     </View>
   );
@@ -99,7 +99,7 @@ const CommentBottomSheetInner = forwardRef<BottomSheet, Props>(
       if (!trimmed) return;
 
       createComment(
-        { report_id: reportId, comment_text: trimmed, comment: trimmed, text: trimmed } as any,
+        { report_id: reportId, comment_text: trimmed },
         {
           onSuccess: () => {
             setCommentText("");

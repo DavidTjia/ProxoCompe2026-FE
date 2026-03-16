@@ -1,9 +1,8 @@
 import { primaryColor, secondaryColor } from "@/constants/theme";
-import { useCreateRating, useRatingsByReport, useUpdateRating } from "@/hooks/use-rating";
-import { useGetUser } from "@/hooks/use-user";
+import { useCreateRating } from "@/hooks/use-rating";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import React, { forwardRef, useCallback, useEffect, useMemo, useState } from "react";
+import React, { forwardRef, useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -23,51 +22,22 @@ const RatingBottomSheetInner = forwardRef<BottomSheet, Props>(
   ({ reportId, onSubmitSuccess }, ref) => {
     const [selectedRating, setSelectedRating] = useState(0);
     const snapPoints = useMemo(() => ["45%"], []);
-
-    const { data: user } = useGetUser();
-    const { data: reportRatings } = useRatingsByReport(reportId);
-    
-    // Find if the user already has a rating
-    const existingRating = useMemo(() => {
-      if (!user || !reportRatings) return null;
-      return reportRatings.find((r: import("@/types").Rating) => r.user_created === user.id);
-    }, [user, reportRatings]);
-
-    // Initial selected rating load
-    useEffect(() => {
-      if (existingRating) {
-        setSelectedRating(existingRating.score || 0);
-      } else {
-        setSelectedRating(0);
-      }
-    }, [existingRating]);
-
-    const { mutate: createRating, isPending: isCreating } = useCreateRating();
-    const { mutate: updateRating, isPending: isUpdating } = useUpdateRating();
-
-    const isPending = isCreating || isUpdating;
+    const { mutate: createRating, isPending } = useCreateRating();
 
     const handleSubmit = useCallback(() => {
       if (selectedRating === 0) return;
 
-      const onSuccess = () => {
-        setSelectedRating(0);
-        onSubmitSuccess?.();
-        (ref as React.RefObject<BottomSheet>)?.current?.close();
-      };
-
-      if (existingRating) {
-        updateRating(
-          { id: existingRating.id, data: { report_id: reportId, rating_value: selectedRating } },
-          { onSuccess }
-        );
-      } else {
-        createRating(
-          { report_id: reportId, rating_value: selectedRating },
-          { onSuccess }
-        );
-      }
-    }, [selectedRating, reportId, createRating, updateRating, existingRating, onSubmitSuccess, ref]);
+      createRating(
+        { report_id: reportId, rating_value: selectedRating },
+        {
+          onSuccess: () => {
+            setSelectedRating(0);
+            onSubmitSuccess?.();
+            (ref as React.RefObject<BottomSheet>)?.current?.close();
+          },
+        },
+      );
+    }, [selectedRating, reportId, createRating, onSubmitSuccess, ref]);
 
     return (
       <BottomSheet

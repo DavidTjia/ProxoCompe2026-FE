@@ -53,7 +53,7 @@ export default function ReportDetailScreen() {
     } catch (error) {
       console.log("error address", error);
     }
-  }, [params]);
+  }, []);
 
   const getUser = async () => {
     const user = await getItemAsync("user");
@@ -68,7 +68,7 @@ export default function ReportDetailScreen() {
   useEffect(() => {
     getAddress();
     getUser();
-  }, [getAddress]);
+  }, []);
 
   const handleDelete = () => {
     Alert.alert(
@@ -150,10 +150,6 @@ export default function ReportDetailScreen() {
 
             <ThemedText style={styles.reported}>
               Reported by {params.username} • 2 hours ago
-            </ThemedText>
-            
-            <ThemedText style={styles.reported}>
-              ⭐ {Number(params.avg_rating || 0).toFixed(1)} Average Rating
             </ThemedText>
           </View>
 
