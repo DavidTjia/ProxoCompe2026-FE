@@ -28,7 +28,7 @@ const RatingBottomSheetInner = forwardRef<BottomSheet, Props>(
       if (selectedRating === 0) return;
 
       createRating(
-        { report_id: reportId, score: selectedRating },
+        { report_id: reportId, rating_value: selectedRating },
         {
           onSuccess: () => {
             setSelectedRating(0);

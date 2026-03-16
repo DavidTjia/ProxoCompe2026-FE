@@ -121,7 +121,7 @@ export default function EditProfileScreen() {
                         ? `${process.env.EXPO_PUBLIC_BASE_API_URL}/assets/${image}`
                         : image,
                   }
-                : require("@/assets/images/profile-placeholder.png")
+                : require("@/assets/images/avatar-placeholder.png")
             }
             style={styles.avatar}
             contentFit="cover"

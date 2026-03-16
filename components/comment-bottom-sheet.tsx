@@ -75,7 +75,7 @@ function CommentItem({ comment }: { comment: Comment }) {
             {formatTimeAgo(comment.date_created)}
           </Text>
         </View>
-        <Text style={styles.commentText}>{comment.content}</Text>
+        <Text style={styles.commentText}>{comment.comment_text}</Text>
       </View>
     </View>
   );
@@ -86,13 +86,8 @@ const CommentBottomSheetInner = forwardRef<BottomSheet, Props>(
     const [commentText, setCommentText] = useState("");
     const snapPoints = useMemo(() => ["60%", "90%"], []);
 
-    const {
-      data,
-      fetchNextPage,
-      hasNextPage,
-      isFetchingNextPage,
-      isLoading,
-    } = useCommentsByReport(reportId);
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+      useCommentsByReport(reportId);
 
     const { mutate: createComment, isPending: isSubmitting } =
       useCreateComment();
@@ -104,7 +99,7 @@ const CommentBottomSheetInner = forwardRef<BottomSheet, Props>(
       if (!trimmed) return;
 
       createComment(
-        { report_id: reportId, content: trimmed },
+        { report_id: reportId, comment_text: trimmed },
         {
           onSuccess: () => {
             setCommentText("");
@@ -128,11 +123,7 @@ const CommentBottomSheetInner = forwardRef<BottomSheet, Props>(
       }
       return (
         <View style={styles.emptyContainer}>
-          <MaterialIcons
-            name="chat-bubble-outline"
-            size={48}
-            color="#D1D5DB"
-          />
+          <MaterialIcons name="chat-bubble-outline" size={48} color="#D1D5DB" />
           <Text style={styles.emptyTitle}>No comments yet</Text>
           <Text style={styles.emptySubtitle}>
             Be the first to share your thoughts!

@@ -53,7 +53,7 @@ export default function ReportDetailScreen() {
     } catch (error) {
       console.log("error address", error);
     }
-  }, [params]);
+  }, []);
 
   const getUser = async () => {
     const user = await getItemAsync("user");
@@ -68,7 +68,7 @@ export default function ReportDetailScreen() {
   useEffect(() => {
     getAddress();
     getUser();
-  }, [getAddress]);
+  }, []);
 
   const handleDelete = () => {
     Alert.alert(

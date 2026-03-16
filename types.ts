@@ -80,18 +80,18 @@ export type Rating = {
 
 export type CreateRatingInput = {
   report_id: string;
-  score: number;
+  rating_value: number;
 };
 
 export type Comment = {
   id: string;
   report_id: string;
   user_created: string | { username: string; avatar?: string };
-  content: string;
+  comment_text: string;
   date_created: string;
 };
 
 export type CreateCommentInput = {
   report_id: string;
-  content: string;
+  comment_text: string;
 };
