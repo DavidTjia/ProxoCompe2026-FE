@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   title: {
-    flex: 1,
+    // flex: 1,
     fontSize: 18,
   },
 });

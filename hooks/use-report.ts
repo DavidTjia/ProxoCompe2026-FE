@@ -56,8 +56,8 @@ export const useInfiniteReports = ({
         limit,
         meta: "*",
         sort: "-date_created",
-        "filter[user_created][_eq]": user_created,
-        "filter[privacy][_eq]": privacy,
+        "filter[user_created][_eq]": user_created || undefined,
+        "filter[privacy][_eq]": privacy || undefined,
         fields: "*,user_created.username",
       });
       return res.data;
@@ -85,6 +85,20 @@ export const useCreateReport = () => {
         photo: imgId.data.data.id,
       });
 
+      return res.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.report.all });
+    },
+  });
+};
+
+//delete report
+export const useDeleteReport = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await reportApi.deleteReport(id);
       return res.data.data;
     },
     onSuccess: () => {

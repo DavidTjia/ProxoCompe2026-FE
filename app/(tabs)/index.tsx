@@ -86,7 +86,7 @@ export default function HomeScreen() {
 
   const avatar = user?.avatar
     ? { uri: `${process.env.EXPO_PUBLIC_BASE_API_URL}/assets/${user.avatar}` }
-    : require("@/assets/images/profile-placeholder.png");
+    : require("@/assets/images/avatar-placeholder.png");
 
   // ── Render Header (Hero + Regions) ───────────────────────
   const renderHeader = () => (

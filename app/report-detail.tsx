@@ -3,6 +3,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { primaryColor } from "@/constants/theme";
+import { useDeleteReport } from "@/hooks/use-report";
 import { Report } from "@/types";
 import {
   getPollutionStatus,
@@ -10,15 +11,25 @@ import {
 } from "@/utils/status-mapping";
 import { Image } from "expo-image";
 import { reverseGeocodeAsync } from "expo-location";
-import { useLocalSearchParams } from "expo-router";
-import { useState } from "react";
-import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ReportDetailScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<Report>();
+
+  const { mutate: deleteReport } = useDeleteReport();
+  const router = useRouter();
+
   const pollutionStatus = getPollutionStatus(
     Number(params.pollution_score || 0),
   );
@@ -39,7 +50,29 @@ export default function ReportDetailScreen() {
     }
   };
 
-  getAddress();
+  useEffect(() => {
+    getAddress();
+  }, []);
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Report",
+      "Are you sure you want to delete this report?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            deleteReport(params.id as string, {
+              onSuccess: () => {
+                router.back();
+              },
+            });
+          },
+        },
+      ],
+    );
+  };
 
   return (
     <ThemedView
@@ -48,7 +81,13 @@ export default function ReportDetailScreen() {
         { paddingTop: insets.top, paddingBottom: insets.bottom },
       ]}
     >
-      <HeaderCst title="Report Detail" />
+      <View style={styles.headerContainer}>
+        <HeaderCst title="Report Detail" />
+
+        <TouchableOpacity style={styles.headerDeleteBtn} onPress={handleDelete}>
+          <IconSymbol name="trash" size={22} color="red" />
+        </TouchableOpacity>
+      </View>
 
       <ScrollView contentContainerStyle={styles.container}>
         {/* PHOTO */}
@@ -273,5 +312,18 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     gap: 4,
+  },
+
+  headerContainer: {
+    position: "relative",
+  },
+
+  headerDeleteBtn: {
+    padding: 8,
+    position: "absolute",
+    right: 16,
+    top: 12,
+    borderRadius: 20,
+    zIndex: 10,
   },
 });

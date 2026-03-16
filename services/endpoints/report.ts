@@ -27,6 +27,9 @@ const reportApi = {
 
   deleteUser: (id: string) =>
     apiClient.delete<ApiResponse<void>>(`/users/${id}`),
+
+  deleteReport: (id: string) =>
+    apiClient.delete<ApiResponse<void>>(`/items/reports/${id}`),
 };
 
 export default reportApi;

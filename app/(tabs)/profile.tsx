@@ -30,7 +30,7 @@ export default function ProfileScreen() {
 
   const avatar = user?.avatar
     ? { uri: `${process.env.EXPO_PUBLIC_BASE_API_URL}/assets/${user.avatar}` }
-    : require("@/assets/images/profile-placeholder.png");
+    : require("@/assets/images/avatar-placeholder.png");
 
   const handleLogout = () => {
     mutate(undefined, {
