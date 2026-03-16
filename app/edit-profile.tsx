@@ -2,15 +2,19 @@ import HeaderCst from "@/components/header-cst";
 import { ThemedText } from "@/components/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useUpdateUser } from "@/hooks/use-user";
+import { User } from "@/types";
 import { openCamera, openGallery } from "@/utils/image-picker";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
-import { useRef, useState } from "react";
+import { router } from "expo-router";
+import { getItemAsync } from "expo-secure-store";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   ScrollView,
   StyleSheet,
   TextInput,
+  ToastAndroid,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -23,10 +27,11 @@ export default function EditProfileScreen() {
   const insets = useSafeAreaInsets();
   const sheetRef = useRef<BottomSheet>(null);
 
+  const [user, setUser] = useState<User | null>(null);
   const [image, setImage] = useState("");
-  const [name, setName] = useState("Budi Setiawan");
-  const [email, setEmail] = useState("budisetia@gmail.com");
-  const [phone, setPhone] = useState("081234567890");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
 
   const { mutate: updateUser, isPending } = useUpdateUser();
 
@@ -58,18 +63,16 @@ export default function EditProfileScreen() {
       phone: phone,
     };
 
-    if (image) {
-      payload.profile_picture = image;
-    }
+    if (image !== user?.avatar) payload.avatar = image;
 
     updateUser(
       {
-        id: "c8b79bb3-4dc7-4124-a5b5-957c33914201",
         data: payload,
       },
       {
         onSuccess: () => {
-          Alert.alert("Success", "Profile updated successfully");
+          ToastAndroid.show("Profile updated successfully", ToastAndroid.SHORT);
+          router.back();
         },
         onError: (err: any) => {
           console.log("UPDATE ERROR:", err);
@@ -85,6 +88,23 @@ export default function EditProfileScreen() {
     );
   };
 
+  const getUser = async () => {
+    const res = await getItemAsync("user");
+    if (res) {
+      const user = JSON.parse(res);
+
+      setUser(user);
+      setName(user.username);
+      setEmail(user.email);
+      setPhone(user.phone);
+      setImage(user.avatar || "");
+    }
+  };
+
+  useEffect(() => {
+    getUser();
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <HeaderCst title="Edit Profile" />
@@ -95,7 +115,12 @@ export default function EditProfileScreen() {
           <Image
             source={
               image
-                ? { uri: image }
+                ? {
+                    uri:
+                      user?.avatar == image
+                        ? `${process.env.EXPO_PUBLIC_BASE_API_URL}/assets/${image}`
+                        : image,
+                  }
                 : require("@/assets/images/profile-placeholder.png")
             }
             style={styles.avatar}
@@ -110,10 +135,16 @@ export default function EditProfileScreen() {
             <View style={styles.inputContainer}>
               <TextInput
                 value={name}
+                placeholder="Safe earth..."
                 onChangeText={setName}
                 style={styles.input}
               />
-              <IconSymbol name="pencil" size={18} color="#777" />
+              <IconSymbol
+                iconSet="material-community"
+                name="pencil"
+                size={18}
+                color="#777"
+              />
             </View>
           </View>
 
@@ -123,11 +154,17 @@ export default function EditProfileScreen() {
               <TextInput
                 value={email}
                 onChangeText={setEmail}
+                placeholder="safeearth@example.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 style={styles.input}
               />
-              <IconSymbol name="pencil" size={18} color="#777" />
+              <IconSymbol
+                iconSet="material-community"
+                name="pencil"
+                size={18}
+                color="#777"
+              />
             </View>
           </View>
 
@@ -137,10 +174,16 @@ export default function EditProfileScreen() {
               <TextInput
                 value={phone}
                 onChangeText={setPhone}
+                placeholder="+62123..."
                 keyboardType="phone-pad"
                 style={styles.input}
               />
-              <IconSymbol name="pencil" size={18} color="#777" />
+              <IconSymbol
+                iconSet="material-community"
+                name="pencil"
+                size={18}
+                color="#777"
+              />
             </View>
           </View>
         </View>

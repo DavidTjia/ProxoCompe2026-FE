@@ -5,9 +5,7 @@ import apiClient from "../api-client";
 const userApi = {
   getUser: () => apiClient.get<ApiResponse<User>>(`users/me`),
   updateUser: (data: Partial<CreateUserInput>) =>
-    apiClient.patch<ApiResponse<User>>(`users/me`, {
-      data,
-    }),
+    apiClient.patch<ApiResponse<User>>(`users/me`, data),
   login: (email: string, password: string) =>
     apiClient.post<ApiResponse<LoginResponse>>(`auth/login`, {
       email,

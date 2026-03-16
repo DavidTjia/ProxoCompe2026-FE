@@ -51,7 +51,7 @@ export async function analyzePollution(prompt: string, image64: string) {
 
     return response.text;
   } catch (error) {
-    console.error("Gemini error:", error);
+    console.log("Gemini error:", error);
     throw error;
   }
 }

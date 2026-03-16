@@ -66,6 +66,7 @@ const MATERIAL_COMMUNITY_MAPPING = {
   "exclamationmark.triangle": "alert-outline",
   leaf: "leaf",
   plus: "plus-circle",
+  pencil: "pencil",
 } as MaterialCommunityMapping;
 
 // Ionicons

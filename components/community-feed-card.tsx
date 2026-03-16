@@ -50,7 +50,6 @@ export function CommunityFeedCard({
   };
 
   useEffect(() => {
-    console.log("ss :", pollutionStatus);
     getAddress();
   }, []);
 
