@@ -41,7 +41,7 @@ export default function ReportDetailScreen() {
 
   const isUserReport = user?.id === params.user_id;
 
-  const getAddress = useCallback(async () => {
+  const getAddress = async () => {
     try {
       const { latitude, longitude } = params;
       const address = await reverseGeocodeAsync({
@@ -53,7 +53,7 @@ export default function ReportDetailScreen() {
     } catch (error) {
       console.log("error address", error);
     }
-  }, []);
+  };
 
   const getUser = async () => {
     const user = await getItemAsync("user");
