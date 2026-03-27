@@ -63,7 +63,7 @@ export default function EditProfileScreen() {
       phone: phone,
     };
 
-    if (image !== user?.avatar) payload.avatar = image;
+    if (image !== user?.avatar) payload.avatar = image || null;
 
     updateUser(
       {

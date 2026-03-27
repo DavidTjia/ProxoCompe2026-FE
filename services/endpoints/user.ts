@@ -12,7 +12,11 @@ const userApi = {
       password,
     }),
   register: (data: CreateUserInput & { role: string }) =>
-    apiClient.post<ApiResponse<User>>(`users`, data),
+    apiClient.post<ApiResponse<User>>(`users`, data, {
+      headers: {
+        Authorization: `Bearer ${process.env.EXPO_PUBLIC_BASE_API_KEY}`,
+      },
+    }),
   logout: async () =>
     apiClient.post<ApiResponse<User>>(`auth/logout`, {
       refresh_token: await getItemAsync("rf_token"),
@@ -23,6 +27,9 @@ const userApi = {
         fields: "id",
         "filter[name][_eq]": "Mobile apps",
         limit: 1,
+      },
+      headers: {
+        Authorization: `Bearer ${process.env.EXPO_PUBLIC_BASE_API_KEY}`,
       },
     }),
 };
