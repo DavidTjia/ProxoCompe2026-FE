@@ -154,6 +154,12 @@ apiClient.interceptors.response.use(
       } finally {
         isRefreshing = false;
       }
+    } else if (error.response?.status === 403) {
+      await deleteItemAsync("token");
+      await deleteItemAsync("rf_token");
+      await deleteItemAsync("user");
+      ToastAndroid.show("Unauthorized", ToastAndroid.SHORT);
+      router.replace("/(auth)/signin");
     }
 
     return Promise.reject({
