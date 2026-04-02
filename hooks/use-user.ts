@@ -91,9 +91,9 @@ export const useLogout = () => {
         success: true,
       };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user"] });
-    },
+    // onSuccess: () => {
+    //   queryClient.invalidateQueries({ queryKey: ["user"] });
+    // },
   });
 };
 

@@ -37,6 +37,7 @@ apiClient.interceptors.request.use(async (config) => {
   }
 
   const token = await getToken();
+  console.log("attach token:", token);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -66,10 +67,10 @@ apiClient.interceptors.response.use(
       responseData: error.response?.data,
       // Headers response
       responseHeaders: error.response?.headers,
+      config: error.config,
     });
 
     const originalRequest = error.config;
-
     if (error.response?.status === 401 && originalRequest) {
       if (originalRequest?.url?.startsWith("auth/")) {
         return Promise.reject({
