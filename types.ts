@@ -87,11 +87,11 @@ export type Comment = {
   id: string;
   report_id: string;
   user_created: string | { username: string; avatar?: string };
-  comment_text: string;
+  content: string;
   date_created: string;
 };
 
 export type CreateCommentInput = {
   report_id: string;
-  comment_text: string;
+  content: string;
 };

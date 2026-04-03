@@ -4,6 +4,8 @@ import { Comment } from "@/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import BottomSheet, {
   BottomSheetFlatList,
+  BottomSheetFooter,
+  BottomSheetFooterProps,
   BottomSheetTextInput,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
@@ -16,9 +18,11 @@ import {
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props = {
   reportId: string;
+  bottomInset?: number;
 };
 
 function formatTimeAgo(dateString: string): string {
@@ -75,38 +79,70 @@ function CommentItem({ comment }: { comment: Comment }) {
             {formatTimeAgo(comment.date_created)}
           </Text>
         </View>
-        <Text style={styles.commentText}>{comment.comment_text}</Text>
+        <Text style={styles.commentText}>{comment.content}</Text>
       </View>
     </View>
   );
 }
 
+const FooterInputContent = ({ reportId }: { reportId: string }) => {
+  const [commentText, setCommentText] = useState("");
+  const { mutate: createComment, isPending: isSubmitting } = useCreateComment();
+
+  const handleSubmit = useCallback(() => {
+    const trimmed = commentText.trim();
+    if (!trimmed) return;
+
+    createComment(
+      { report_id: reportId, content: trimmed },
+      {
+        onSuccess: () => {
+          setCommentText("");
+        },
+      },
+    );
+  }, [commentText, reportId, createComment]);
+
+  return (
+    <View style={styles.inputBar}>
+      <BottomSheetTextInput
+        style={styles.textInput}
+        placeholder="Write a comment..."
+        placeholderTextColor="#9CA3AF"
+        value={commentText}
+        onChangeText={setCommentText}
+        multiline
+        maxLength={500}
+      />
+      <Pressable
+        style={[
+          styles.sendBtn,
+          (!commentText.trim() || isSubmitting) && styles.sendBtnDisabled,
+        ]}
+        onPress={handleSubmit}
+        disabled={!commentText.trim() || isSubmitting}
+      >
+        {isSubmitting ? (
+          <ActivityIndicator color="#fff" size="small" />
+        ) : (
+          <MaterialIcons name="send" size={20} color="#FFFFFF" />
+        )}
+      </Pressable>
+    </View>
+  );
+};
+
 const CommentBottomSheetInner = forwardRef<BottomSheet, Props>(
-  ({ reportId }, ref) => {
-    const [commentText, setCommentText] = useState("");
+  ({ reportId, bottomInset }, ref) => {
     const snapPoints = useMemo(() => ["53%", "90%"], []);
+    const insets = useSafeAreaInsets();
+    // Capture initial bottom inset so keyboard opening doesn't trigger responsive insets and re-render the footer
+    const initialBottomInset = useMemo(() => bottomInset !== undefined ? bottomInset : insets.bottom, [bottomInset]);
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
       useCommentsByReport(reportId);
 
-    const { mutate: createComment, isPending: isSubmitting } =
-      useCreateComment();
-
     const allComments = data?.pages.flatMap((page) => page.data) || [];
-
-    const handleSubmit = useCallback(() => {
-      const trimmed = commentText.trim();
-      if (!trimmed) return;
-
-      createComment(
-        { report_id: reportId, comment_text: trimmed },
-        {
-          onSuccess: () => {
-            setCommentText("");
-          },
-        },
-      );
-    }, [commentText, reportId, createComment]);
 
     const renderComment = useCallback(
       ({ item }: { item: Comment }) => <CommentItem comment={item} />,
@@ -141,6 +177,15 @@ const CommentBottomSheetInner = forwardRef<BottomSheet, Props>(
       );
     }, [isFetchingNextPage]);
 
+    const renderInputBar = useCallback(
+      (props: BottomSheetFooterProps) => (
+        <BottomSheetFooter {...props} bottomInset={initialBottomInset}>
+          <FooterInputContent reportId={reportId} />
+        </BottomSheetFooter>
+      ),
+      [reportId, initialBottomInset],
+    );
+
     return (
       <BottomSheet
         ref={ref}
@@ -151,15 +196,16 @@ const CommentBottomSheetInner = forwardRef<BottomSheet, Props>(
         handleIndicatorStyle={styles.handleIndicator}
         keyboardBehavior="extend"
         keyboardBlurBehavior="restore"
-        android_keyboardInputMode="adjustResize"
+        android_keyboardInputMode="adjustPan"
         enableDynamicSizing={false}
+        footerComponent={renderInputBar}
       >
         <BottomSheetView style={{ flex: 1 }}>
           {/* Header */}
           <View style={styles.headerContainer}>
             <Text style={styles.title}>Comments</Text>
             <Text style={styles.commentCount}>
-              {data?.pages[0]?.meta?.total_count || 0} comments
+              {data?.pages[0]?.meta?.filter_count || 0} comments
             </Text>
           </View>
 
@@ -178,33 +224,6 @@ const CommentBottomSheetInner = forwardRef<BottomSheet, Props>(
             }}
             onEndReachedThreshold={0.3}
           />
-
-          {/* Input bar */}
-          <View style={styles.inputBar}>
-            <BottomSheetTextInput
-              style={styles.textInput}
-              placeholder="Write a comment..."
-              placeholderTextColor="#9CA3AF"
-              value={commentText}
-              onChangeText={setCommentText}
-              multiline
-              maxLength={500}
-            />
-            <Pressable
-              style={[
-                styles.sendBtn,
-                (!commentText.trim() || isSubmitting) && styles.sendBtnDisabled,
-              ]}
-              onPress={handleSubmit}
-              disabled={!commentText.trim() || isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <MaterialIcons name="send" size={20} color="#FFFFFF" />
-              )}
-            </Pressable>
-          </View>
         </BottomSheetView>
       </BottomSheet>
     );
@@ -252,6 +271,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 20,
     paddingTop: 8,
+    paddingBottom: 72,
     flexGrow: 1,
   },
 
@@ -329,6 +349,7 @@ const styles = StyleSheet.create({
 
   // Input bar
   inputBar: {
+    backgroundColor: "#FFFFFF",
     flexDirection: "row",
     alignItems: "flex-end",
     paddingHorizontal: 16,

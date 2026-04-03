@@ -22,12 +22,14 @@ export const useCommentsByReport = (reportId: string) => {
       return res.data;
     },
     getNextPageParam: (lastPage, allPages) => {
-      const totalPages = Math.ceil((lastPage.meta?.total_count || 0) / 20);
+      const totalPages = Math.ceil((lastPage.meta?.filter_count || 0) / 20);
       const nextPage = allPages.length + 1;
       return nextPage <= totalPages ? nextPage : undefined;
     },
     initialPageParam: 1,
     enabled: !!reportId,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 };
 

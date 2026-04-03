@@ -18,6 +18,7 @@ export default function TabLayout() {
             backgroundColor: "#fff",
             // backgroundColor: Colors[colorScheme ?? "light"].background,
           },
+          tabBarHideOnKeyboard: true,
           headerShown: false,
           tabBarButton: HapticTab,
         }}

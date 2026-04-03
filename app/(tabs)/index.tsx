@@ -216,7 +216,7 @@ export default function HomeScreen() {
         onEndReachedThreshold={0.5}
       />
 
-      <CommentBottomSheet reportId={selectedReportId} ref={commentSheetRef} />
+      <CommentBottomSheet reportId={selectedReportId} ref={commentSheetRef} bottomInset={0} />
       <RatingBottomSheet reportId={selectedReportId} ref={ratingSheetRef} />
     </ThemedView>
   );
