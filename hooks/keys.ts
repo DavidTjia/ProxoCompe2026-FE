@@ -15,4 +15,9 @@ export const queryKeys = {
     byReport: (reportId: string) =>
       [...queryKeys.comment.all, "report", reportId] as const,
   },
+  notification: {
+    all: ["notification"] as const,
+    lists: (filters?: Record<string, unknown>) =>
+      [...queryKeys.notification.all, "list", filters] as const,
+  },
 } as const;

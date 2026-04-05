@@ -45,7 +45,6 @@ export default function SignupScreen() {
       Alert.alert("Error", "You must agree to Terms");
       return;
     }
-    // console.log("Signing up with:", { username, email, password });
 
     mutate(
       { email, password, username },
@@ -59,36 +58,6 @@ export default function SignupScreen() {
         },
       },
     );
-    // try {
-    //   const res = await fetch(
-    //     `${process.env.EXPO_PUBLIC_BASE_API_URL}/items/users`,
-    //     {
-    //       method: "POST",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         Authorization: `Bearer ${process.env.EXPO_PUBLIC_BASE_API_KEY}`,
-    //       },
-    //       body: JSON.stringify({
-    //         email: email,
-    //         password: password,
-    //         username: username,
-    //       }),
-    //     },
-    //   );
-
-    //   const data = await res.json();
-
-    //   if (res.status === 200 || res.status === 201) {
-    //     Alert.alert("Success", "Account created successfully");
-
-    //     router.replace("/(auth)/signin");
-    //   } else {
-    //     Alert.alert("Signup Failed", data?.errors?.[0]?.message || "Error");
-    //   }
-    // } catch (error) {
-    //   console.log(error);
-    //   Alert.alert("Error", "Cannot connect to server");
-    // }
   };
 
   return (

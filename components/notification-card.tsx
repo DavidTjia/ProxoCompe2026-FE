@@ -1,5 +1,6 @@
 import { primaryColor } from "@/constants/theme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { format, formatDistanceToNow } from "date-fns";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { ThemedText } from "./themed-text";
@@ -7,7 +8,8 @@ import { ThemedText } from "./themed-text";
 export type NotificationType =
   | "location"
   | "report"
-  | "comment"
+  | "ratings"
+  | "comments"
   | "verified"
   | "info";
 
@@ -18,37 +20,34 @@ type NotificationIconConfig = {
 const ICON_MAP: Record<NotificationType, NotificationIconConfig> = {
   location: { name: "location-on" },
   report: { name: "assignment" },
-  comment: { name: "chat-bubble-outline" },
+  ratings: { name: "star" },
+  comments: { name: "chat-bubble-outline" },
   verified: { name: "verified-user" },
   info: { name: "info-outline" },
 };
 
 export type NotificationCardProps = {
-  type: NotificationType;
+  code: NotificationType;
   title: string;
-  description: string;
-  timeAgo: string;
+  content: string;
+  date_created: string;
   isEarlier?: boolean;
 };
 
 export function NotificationCard({
-  type,
+  code,
   title,
-  description,
-  timeAgo,
+  content,
+  date_created,
   isEarlier = false,
 }: NotificationCardProps) {
-  const iconConfig = ICON_MAP[type];
+  const iconConfig = ICON_MAP[code];
 
   return (
-    <View style={[styles.card, isEarlier && styles.cardEarlier]}>
+    <View style={styles.card}>
       {/* Icon */}
-      <View style={[styles.iconContainer, isEarlier && styles.iconEarlier]}>
-        <MaterialIcons
-          name={iconConfig.name}
-          size={22}
-          color={primaryColor}
-        />
+      <View style={styles.iconContainer}>
+        <MaterialIcons name={iconConfig.name} size={22} color={primaryColor} />
       </View>
 
       {/* Content */}
@@ -61,9 +60,13 @@ export function NotificationCard({
           >
             {title}
           </ThemedText>
-          <ThemedText style={styles.timeAgo}>{timeAgo}</ThemedText>
+          <ThemedText style={styles.timeAgo}>
+            {isEarlier
+              ? format(date_created, "dd MMM yyyy")
+              : formatDistanceToNow(date_created)}
+          </ThemedText>
         </View>
-        <ThemedText style={styles.description}>{description}</ThemedText>
+        <ThemedText style={styles.description}>{content}</ThemedText>
       </View>
     </View>
   );
@@ -83,9 +86,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  cardEarlier: {
-    backgroundColor: "#E8EDDF",
-  },
   iconContainer: {
     width: 44,
     height: 44,
@@ -94,9 +94,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
-  },
-  iconEarlier: {
-    backgroundColor: "#14341618",
   },
   content: {
     flex: 1,

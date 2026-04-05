@@ -40,8 +40,6 @@ const ReportResultScreen = () => {
   const { mutate, isPending } = useCreateReport();
   const pollutionStatus = getPollutionStatus(aiResponse.pollutionScore || 0);
 
-  console.log("result screen :", aiResponse);
-
   const handleSubmit = (mode: "PUBLIC" | "ONLY_ME") => {
     mutate(
       {
@@ -55,7 +53,6 @@ const ReportResultScreen = () => {
       },
       {
         onError(error) {
-          console.log("error create report", error);
           Alert.alert("Error creating report", error.message);
         },
         onSuccess() {

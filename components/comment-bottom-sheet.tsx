@@ -80,6 +80,7 @@ function CommentItem({ comment }: { comment: Comment }) {
           </Text>
         </View>
         <Text style={styles.commentText}>{comment.content}</Text>
+        <Text style={styles.commentText}>{comment.content}</Text>
       </View>
     </View>
   );
@@ -137,7 +138,10 @@ const CommentBottomSheetInner = forwardRef<BottomSheet, Props>(
     const snapPoints = useMemo(() => ["53%", "90%"], []);
     const insets = useSafeAreaInsets();
     // Capture initial bottom inset so keyboard opening doesn't trigger responsive insets and re-render the footer
-    const initialBottomInset = useMemo(() => bottomInset !== undefined ? bottomInset : insets.bottom, [bottomInset]);
+    const initialBottomInset = useMemo(
+      () => (bottomInset !== undefined ? bottomInset : insets.bottom),
+      [bottomInset],
+    );
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
       useCommentsByReport(reportId);

@@ -44,49 +44,6 @@ export default function SignInScreen() {
     );
   };
 
-  // const handleLogin = async () => {
-  //   if (!email || !password) {
-  //     Alert.alert("Error", "Please enter email and password");
-  //     return;
-  //   }
-
-  //   try {
-  //     setLoading(true);
-
-  //     const params = new URLSearchParams({
-  //       "filter[email][_eq]": email,
-  //       // "filter[password][_eq]": password,
-  //       limit: "1",
-  //     });
-
-  //     const res = await fetch(
-  //       `${process.env.EXPO_PUBLIC_BASE_API_URL}/items/users?${params.toString()}`,
-  //       {
-  //         method: "GET",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${process.env.EXPO_PUBLIC_BASE_API_KEY}`,
-  //         },
-  //       },
-  //     );
-
-  //     const data = await res.json();
-  //     console.log("LOGIN RESPONSE", data);
-  //     if (res.status === 200) {
-  //       console.log("LOGIN SUCCESS", data);
-
-  //       router.replace("/(tabs)");
-  //     } else {
-  //       Alert.alert("Login Failed", "Email or password is incorrect");
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //     Alert.alert("Error", "Cannot connect to server");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   return (
     <ThemedView
       style={[

@@ -113,19 +113,27 @@ export default function NewReportScreen() {
   const onSubmit = handleSubmit(async (data) => {
     const { photo, ...payload } = data;
 
-    setLoading(true);
-    const aiResponse = await analyzePollution(JSON.stringify(payload), base64);
+    try {
+      setLoading(true);
+      const aiResponse = await analyzePollution(
+        JSON.stringify(payload),
+        base64,
+      );
+
+      router.replace({
+        pathname: "/result",
+        params: {
+          ...data,
+          aiResponse,
+        },
+      });
+    } catch (err) {
+      console.log("error analyze pollution :", err);
+    } finally {
+      setLoading(false);
+    }
     //Sementara pake dummy for hemat token kwokowkwo :p
     // const aiResponse = `{"pollutionScore":0,"summary":"DATA INVALID: Description is gibberish and image shows no discernible pollution. Cannot perform environmental analysis."}`;
-
-    setLoading(false);
-    router.replace({
-      pathname: "/result",
-      params: {
-        ...data,
-        aiResponse,
-      },
-    });
   });
 
   return (

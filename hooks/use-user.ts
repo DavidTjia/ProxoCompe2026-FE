@@ -27,10 +27,7 @@ export const useLogin = () => {
       const res = await userApi.login(email, password);
 
       await setItemAsync("token", res.data.data.access_token);
-      await setItemAsync(
-        "rf_token",
-        JSON.stringify(res.data.data.refresh_token),
-      );
+      await setItemAsync("rf_token", res.data.data.refresh_token);
 
       const resUser = await userApi.getUser();
       await setItemAsync("user", JSON.stringify(resUser.data.data));
@@ -86,6 +83,7 @@ export const useLogout = () => {
       await deleteItemAsync("token");
       await deleteItemAsync("rf_token");
       await deleteItemAsync("user");
+      await deleteItemAsync("expo_push_token");
 
       return {
         success: true,

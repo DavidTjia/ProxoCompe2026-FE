@@ -33,8 +33,6 @@ const MOCK_REGIONS: RegionData[] = [
   { name: "West Industrial", score: 6.8 },
 ];
 
-// ── Component ──────────────────────────────────────────────
-
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [user, setUser] = useState<User | null>(null);

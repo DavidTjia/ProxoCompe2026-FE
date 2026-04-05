@@ -25,33 +25,26 @@ PROCEED WITH ANALYSIS.
 INPUT: `;
 
 export async function analyzePollution(prompt: string, image64: string) {
-  try {
-    const ai = new GoogleGenAI({
-      apiKey: process.env.EXPO_PUBLIC_GEMINI_API_KEY,
-    });
+  const ai = new GoogleGenAI({
+    apiKey: process.env.EXPO_PUBLIC_GEMINI_API_KEY,
+  });
 
-    console.log("gemini prompt", PRE_PROMPT + prompt);
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
-        {
-          text: PRE_PROMPT + prompt,
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: [
+      {
+        text: PRE_PROMPT + prompt,
+      },
+      {
+        inlineData: {
+          mimeType: "image/jpeg",
+          data: image64,
         },
-        {
-          inlineData: {
-            mimeType: "image/jpeg",
-            data: image64,
-          },
-        },
-      ],
-    });
+      },
+    ],
+  });
 
-    console.log("gemini res", response.text);
+  console.log("AI report result", response.text);
 
-    return response.text;
-  } catch (error) {
-    console.log("Gemini error:", error);
-    throw error;
-  }
+  return response.text;
 }

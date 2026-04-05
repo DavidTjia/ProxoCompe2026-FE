@@ -37,7 +37,6 @@ apiClient.interceptors.request.use(async (config) => {
   }
 
   const token = await getToken();
-  console.log("attach token:", token);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -56,18 +55,7 @@ apiClient.interceptors.response.use(
   async (error) => {
     // Log detail error
     console.log("❌ API Error:", {
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      method: error.config?.method,
-      // Data sent to server
-      requestData: error.config?.data,
-      // Response from server
-      responseData: error.response?.data,
-      // Headers response
-      responseHeaders: error.response?.headers,
-      config: error.config,
+      error,
     });
 
     const originalRequest = error.config;
@@ -84,6 +72,7 @@ apiClient.interceptors.response.use(
         await deleteItemAsync("token");
         await deleteItemAsync("rf_token");
         await deleteItemAsync("user");
+        await deleteItemAsync("expo_push_token");
 
         ToastAndroid.show("Session expired", ToastAndroid.SHORT);
         router.replace("/(auth)/signin");
@@ -108,8 +97,8 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        console.log("refresh token");
         const refreshToken = await getItemAsync("rf_token");
+        console.log("refresh token", refreshToken);
 
         if (!refreshToken) {
           return Promise.reject({
@@ -147,6 +136,7 @@ apiClient.interceptors.response.use(
         await deleteItemAsync("token");
         await deleteItemAsync("rf_token");
         await deleteItemAsync("user");
+        await deleteItemAsync("expo_push_token");
 
         ToastAndroid.show("Session expired", ToastAndroid.SHORT);
         router.replace("/(auth)/signin");

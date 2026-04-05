@@ -75,9 +75,6 @@ export default function EditProfileScreen() {
           router.back();
         },
         onError: (err: any) => {
-          console.log("UPDATE ERROR:", err);
-          console.log("UPDATE ERROR DATA:", err?.response?.data);
-
           Alert.alert(
             "Error",
             err?.response?.data?.errors?.[0]?.message ||
