@@ -40,6 +40,8 @@ export default function ReportDetailScreen() {
   const [address, setAddress] = useState("");
 
   const isUserReport = user?.id === params.user_id;
+  console.log("USER:", user);
+  console.log("PARAM USER ID:", params.user_id);
 
   const getAddress = async () => {
     try {

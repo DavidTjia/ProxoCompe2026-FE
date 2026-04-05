@@ -58,11 +58,13 @@ export default function HistoryScreen() {
 
   const handleDetailsPress = (report: Report & { user_created?: User }) => {
     const { user_created, ...rest } = report;
+
     router.push({
       pathname: "/report-detail",
       params: {
         ...rest,
         username: user_created?.username,
+        user_id: user_created?.id,
       },
     });
   };
