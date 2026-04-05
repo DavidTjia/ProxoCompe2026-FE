@@ -3,7 +3,12 @@ import { getItemAsync } from "expo-secure-store";
 import apiClient from "../api-client";
 
 const userApi = {
-  getUser: () => apiClient.get<ApiResponse<User>>(`users/me`),
+  getUser: () =>
+    apiClient.get(`users/me`, {
+      params: {
+        fields: "id,username,email,avatar,date_created,last_access",
+      },
+    }),
   updateUser: (data: Partial<CreateUserInput>) =>
     apiClient.patch<ApiResponse<User>>(`users/me`, data),
   login: (email: string, password: string) =>

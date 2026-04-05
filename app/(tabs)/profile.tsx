@@ -18,6 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function ProfileScreen() {
   const [preview, setPreview] = useState(false);
   const { data: user, error } = useGetUser();
+  console.log("USER DATA:", user);
   const { data: reportStats } = useReportStats({
     user_created: user?.id,
     enabled: !!user?.id,
@@ -27,6 +28,17 @@ export default function ProfileScreen() {
   if (error) {
     Alert.alert("Error Profile", error.message);
   }
+
+  const formatMemberSince = (date?: string) => {
+    if (!date) return "-";
+
+    const d = new Date(date);
+
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
+  };
 
   const avatar = user?.avatar
     ? { uri: `${process.env.EXPO_PUBLIC_BASE_API_URL}/assets/${user.avatar}` }
@@ -56,7 +68,9 @@ export default function ProfileScreen() {
           </Pressable>
 
           <Text style={styles.name}>{user?.username ?? "User"}</Text>
-          <Text style={styles.member}>Member since Oct 2023</Text>
+          <Text style={styles.member}>
+            Member since {formatMemberSince(user?.date_created)}
+          </Text>
         </View>
 
         {/* REPORT CARD */}

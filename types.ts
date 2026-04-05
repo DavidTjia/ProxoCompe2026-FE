@@ -62,6 +62,7 @@ export type User = {
   phone?: string;
   avatar?: string;
   created_at?: string;
+  date_created?: string;
 };
 
 export type CreateUserInput = {
