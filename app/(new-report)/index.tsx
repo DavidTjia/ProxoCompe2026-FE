@@ -1,6 +1,7 @@
 import ButtonCst from "@/components/button-cst";
 import FullscreenLoader from "@/components/fullscreen-loader";
 import HeaderCst from "@/components/header-cst";
+import LocationPicker from "@/components/location-picker";
 import { ThemedText } from "@/components/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors, primaryColor } from "@/constants/theme";
@@ -17,6 +18,7 @@ import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -38,6 +40,7 @@ export default function NewReportScreen() {
   const [locationName, setLocationName] = useState("");
   const [base64, setBase64] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
 
   const {
     control,
@@ -249,19 +252,19 @@ export default function NewReportScreen() {
           <ThemedText type="subtitle" style={styles.subtitle}>
             Location
           </ThemedText>
+
           <View style={styles.locationContainer}>
             <View style={styles.circle}>
               <IconSymbol name="location" size={22} color={primaryColor} />
             </View>
+
             <View style={{ flex: 1 }}>
-              <ThemedText
-                style={{ flex: 1, flexWrap: "wrap" }}
-                numberOfLines={2}
-              >
+              <ThemedText numberOfLines={2}>
                 {`📍 ${locationName}` || "Location unavailable"}
               </ThemedText>
             </View>
-            <ButtonCst label="Change" onPress={() => null} />
+
+            <ButtonCst label="Change" onPress={() => setShowMapPicker(true)} />
           </View>
 
           {(errors.latitude || errors.longitude) && (
@@ -306,6 +309,22 @@ export default function NewReportScreen() {
           <ThemedText style={styles.submitBtnText}>Analyze Report</ThemedText>
         </ButtonCst>
       </LinearGradient>
+
+      {showMapPicker && (
+        <Modal animationType="slide">
+          <SafeAreaView style={{ flex: 1 }}>
+            <LocationPicker
+              onSelect={({ latitude, longitude, address }) => {
+                setValue("latitude", latitude, { shouldValidate: true });
+                setValue("longitude", longitude, { shouldValidate: true });
+
+                setLocationName(address);
+                setShowMapPicker(false);
+              }}
+            />
+          </SafeAreaView>
+        </Modal>
+      )}
 
       <BottomSheet
         ref={sheetRef}
