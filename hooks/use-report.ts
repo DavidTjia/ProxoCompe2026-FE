@@ -72,6 +72,18 @@ export const useInfiniteReports = ({
   });
 };
 
+export const useReportDetail = (id: string) =>
+  useQuery({
+    queryKey: ["reportDetail", id],
+    queryFn: async () => {
+      const res = await reportApi.getReportDetail(id, {
+        fields: "*,user_created.username,user_created.id",
+      });
+      return res.data.data;
+    },
+    enabled: !!id,
+  });
+
 export const useCreateReport = () => {
   const queryClient = useQueryClient();
 

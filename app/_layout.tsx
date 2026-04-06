@@ -48,7 +48,10 @@ export default function RootLayout() {
 
     if (!data?.screen) return;
 
-    router.replace(data.screen as any);
+    router.replace({
+      pathname: data.screen as any,
+      params: data.params as any,
+    });
   }, [lastResponse]);
 
   // Handle notification when app is running
@@ -59,7 +62,10 @@ export default function RootLayout() {
 
         if (!data?.screen) return;
 
-        router.replace(data.screen as any);
+        router.replace({
+          pathname: data.screen as any,
+          params: data.params as any,
+        });
       },
     );
 

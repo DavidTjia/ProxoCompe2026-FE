@@ -64,14 +64,11 @@ export default function HomeScreen() {
   const allReports = data?.pages.flatMap((page) => page.data) || [];
   const totalReports = reportStats?.count.id || 0;
 
-  function handleCardPress(report: Report & { user_created?: User }) {
-    const { user_created, ...rest } = report;
+  function handleCardPress(report: Report) {
     router.push({
       pathname: "/report-detail",
       params: {
-        ...rest,
-        username: user_created?.username,
-        user_id: user_created?.id,
+        id: report.id,
       },
     });
   }
@@ -214,7 +211,11 @@ export default function HomeScreen() {
         onEndReachedThreshold={0.5}
       />
 
-      <CommentBottomSheet reportId={selectedReportId} ref={commentSheetRef} bottomInset={0} />
+      <CommentBottomSheet
+        reportId={selectedReportId}
+        ref={commentSheetRef}
+        bottomInset={0}
+      />
       <RatingBottomSheet reportId={selectedReportId} ref={ratingSheetRef} />
     </ThemedView>
   );

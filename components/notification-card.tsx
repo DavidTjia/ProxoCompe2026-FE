@@ -1,8 +1,9 @@
 import { primaryColor } from "@/constants/theme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { format, formatDistanceToNow } from "date-fns";
+import { Link } from "expo-router";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { ThemedText } from "./themed-text";
 
 export type NotificationType =
@@ -32,6 +33,10 @@ export type NotificationCardProps = {
   content: string;
   date_created: string;
   isEarlier?: boolean;
+  data: {
+    screen: string;
+    params: Record<string, string>;
+  };
 };
 
 export function NotificationCard({
@@ -40,35 +45,48 @@ export function NotificationCard({
   content,
   date_created,
   isEarlier = false,
+  data,
 }: NotificationCardProps) {
   const iconConfig = ICON_MAP[code];
 
   return (
-    <View style={styles.card}>
-      {/* Icon */}
-      <View style={styles.iconContainer}>
-        <MaterialIcons name={iconConfig.name} size={22} color={primaryColor} />
-      </View>
-
-      {/* Content */}
-      <View style={styles.content}>
-        <View style={styles.titleRow}>
-          <ThemedText
-            type="defaultSemiBold"
-            style={styles.title}
-            numberOfLines={2}
-          >
-            {title}
-          </ThemedText>
-          <ThemedText style={styles.timeAgo}>
-            {isEarlier
-              ? format(date_created, "dd MMM yyyy")
-              : formatDistanceToNow(date_created)}
-          </ThemedText>
+    <Link
+      asChild
+      href={{
+        pathname: (data?.screen as any) ?? null,
+        params: data?.params ?? null,
+      }}
+    >
+      <TouchableOpacity style={styles.card}>
+        {/* Icon */}
+        <View style={styles.iconContainer}>
+          <MaterialIcons
+            name={iconConfig.name}
+            size={22}
+            color={primaryColor}
+          />
         </View>
-        <ThemedText style={styles.description}>{content}</ThemedText>
-      </View>
-    </View>
+
+        {/* Content */}
+        <View style={styles.content}>
+          <View style={styles.titleRow}>
+            <ThemedText
+              type="defaultSemiBold"
+              style={styles.title}
+              numberOfLines={2}
+            >
+              {title}
+            </ThemedText>
+            <ThemedText style={styles.timeAgo}>
+              {isEarlier
+                ? format(date_created, "dd MMM yyyy")
+                : formatDistanceToNow(date_created)}
+            </ThemedText>
+          </View>
+          <ThemedText style={styles.description}>{content}</ThemedText>
+        </View>
+      </TouchableOpacity>
+    </Link>
   );
 }
 

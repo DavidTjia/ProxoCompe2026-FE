@@ -57,14 +57,10 @@ export default function HistoryScreen() {
   const averageScore = Number(reportStats?.avg?.pollution_score || 0);
 
   const handleDetailsPress = (report: Report & { user_created?: User }) => {
-    const { user_created, ...rest } = report;
-
     router.push({
       pathname: "/report-detail",
       params: {
-        ...rest,
-        username: user_created?.username,
-        user_id: user_created?.id,
+        id: report.id,
       },
     });
   };

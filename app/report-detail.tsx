@@ -5,19 +5,22 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { primaryColor } from "@/constants/theme";
-import { useDeleteReport } from "@/hooks/use-report";
-import { Report, User } from "@/types";
+import { useDeleteReport, useReportDetail } from "@/hooks/use-report";
+import { User } from "@/types";
 import { getPollutionStatus } from "@/utils/status-mapping";
 import BottomSheet from "@gorhom/bottom-sheet";
+import { formatDistanceToNow } from "date-fns";
 import { Image } from "expo-image";
 import { reverseGeocodeAsync } from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { getItemAsync } from "expo-secure-store";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   ScrollView,
   StyleSheet,
+  Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -26,8 +29,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ReportDetailScreen() {
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<Report>();
+  const params = useLocalSearchParams<{ id: string }>();
+  const { id } = params;
   const [user, setUser] = useState<User | null>(null);
+  const { data, isLoading, error } = useReportDetail(id);
   const { mutate: deleteReport } = useDeleteReport();
   const router = useRouter();
 
@@ -35,20 +40,22 @@ export default function ReportDetailScreen() {
   const commentSheetRef = useRef<BottomSheet>(null);
 
   const pollutionStatus = getPollutionStatus(
-    Number(params.pollution_score || 0),
+    Number(data?.pollution_score || 0),
   );
   const [address, setAddress] = useState("");
 
-  const isUserReport = user?.id === params.user_id;
-  console.log("USER:", user);
-  console.log("PARAM USER ID:", params.user_id);
+  const isUserReport = user?.id === data?.user_created?.id;
 
   const getAddress = async () => {
     try {
-      const { latitude, longitude } = params;
+      const lat = data?.latitude;
+      const lon = data?.longitude;
+
+      if (!lat || !lon) return;
+
       const address = await reverseGeocodeAsync({
-        latitude: Number(latitude),
-        longitude: Number(longitude),
+        latitude: Number(lat),
+        longitude: Number(lon),
       });
 
       setAddress(address?.[0]?.formattedAddress || "");
@@ -82,7 +89,7 @@ export default function ReportDetailScreen() {
           text: "Delete",
           style: "destructive",
           onPress: () => {
-            deleteReport(params.id as string, {
+            deleteReport(id as string, {
               onSuccess: () => {
                 router.back();
               },
@@ -100,6 +107,43 @@ export default function ReportDetailScreen() {
   const handleOpenComments = useCallback(() => {
     commentSheetRef.current?.snapToIndex(0);
   }, []);
+
+  if (isLoading || !data) {
+    return (
+      <ThemedView
+        style={[
+          styles.safeArea,
+          {
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+            justifyContent: "center",
+            alignItems: "center",
+          },
+        ]}
+      >
+        <ActivityIndicator size="large" color={primaryColor} />
+        <ThemedText style={{ marginTop: 16 }}>Loading report...</ThemedText>
+      </ThemedView>
+    );
+  }
+
+  if (error) {
+    return (
+      <ThemedView
+        style={[
+          styles.safeArea,
+          {
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+            justifyContent: "center",
+            alignItems: "center",
+          },
+        ]}
+      >
+        <ThemedText style={{ color: "red" }}>Failed to load report.</ThemedText>
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView
@@ -124,7 +168,7 @@ export default function ReportDetailScreen() {
         {/* PHOTO */}
         <View style={styles.imageContainer}>
           <Image
-            source={`${process.env.EXPO_PUBLIC_BASE_API_URL}/assets/${params.photo}`}
+            source={`${process.env.EXPO_PUBLIC_BASE_API_URL}/assets/${data?.photo}`}
             style={styles.image}
             contentFit="contain"
           />
@@ -151,7 +195,10 @@ export default function ReportDetailScreen() {
             <ThemedText style={styles.location}>📍 {address}</ThemedText>
 
             <ThemedText style={styles.reported}>
-              Reported by {params.username} • 2 hours ago
+              Reported by {data?.user_created?.username} •{" "}
+              <Text style={{ textTransform: "capitalize" }}>
+                {formatDistanceToNow(data?.date_created, { addSuffix: true })}
+              </Text>
             </ThemedText>
           </View>
 
@@ -160,7 +207,7 @@ export default function ReportDetailScreen() {
           >
             <ThemedText style={styles.scoreLabel}>SCORE</ThemedText>
             <ThemedText style={styles.scoreNumber}>
-              {Number(params.pollution_score).toFixed(1)}
+              {Number(data?.pollution_score).toFixed(1)}
             </ThemedText>
           </View>
         </View>
@@ -172,7 +219,7 @@ export default function ReportDetailScreen() {
             <ThemedText style={styles.aiTitle}>AI ANALYSIS SUMMARY</ThemedText>
           </View>
 
-          <ThemedText style={styles.aiText}>{params.ai_summary}</ThemedText>
+          <ThemedText style={styles.aiText}>{data?.ai_summary}</ThemedText>
         </View>
 
         {/* DESCRIPTION */}
@@ -180,7 +227,7 @@ export default function ReportDetailScreen() {
           <ThemedText type="subtitle">Detailed Description</ThemedText>
 
           <ThemedText style={styles.description}>
-            {params.description}
+            {data?.description}
           </ThemedText>
         </View>
 
@@ -192,16 +239,16 @@ export default function ReportDetailScreen() {
             <MapView
               style={{ flex: 1 }}
               initialRegion={{
-                latitude: Number(params.latitude),
-                longitude: Number(params.longitude),
+                latitude: Number(data?.latitude),
+                longitude: Number(data?.longitude),
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
               }}
             >
               <Marker
                 coordinate={{
-                  latitude: Number(params.latitude),
-                  longitude: Number(params.longitude),
+                  latitude: Number(data?.latitude),
+                  longitude: Number(data?.longitude),
                 }}
               />
             </MapView>
@@ -209,7 +256,7 @@ export default function ReportDetailScreen() {
         </View>
 
         {/* ACTION BUTTONS */}
-        {params.privacy === "PUBLIC" && (
+        {data?.privacy === "PUBLIC" && (
           <View style={styles.actions}>
             <TouchableOpacity
               style={styles.actionBtn}
@@ -241,11 +288,8 @@ export default function ReportDetailScreen() {
       </ScrollView>
 
       {/* Bottom Sheets */}
-      <RatingBottomSheet ref={ratingSheetRef} reportId={params.id as string} />
-      <CommentBottomSheet
-        ref={commentSheetRef}
-        reportId={params.id as string}
-      />
+      <RatingBottomSheet ref={ratingSheetRef} reportId={data?.id as string} />
+      <CommentBottomSheet ref={commentSheetRef} reportId={data?.id as string} />
     </ThemedView>
   );
 }

@@ -98,7 +98,6 @@ apiClient.interceptors.response.use(
 
       try {
         const refreshToken = await getItemAsync("rf_token");
-        console.log("refresh token", refreshToken);
 
         if (!refreshToken) {
           return Promise.reject({
