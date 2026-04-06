@@ -29,11 +29,6 @@ export default function WelcomeScreen() {
       >
         <Text style={styles.signupText}>Sign Up</Text>
       </TouchableOpacity>
-
-      {/* Guest */}
-      <TouchableOpacity>
-        <Text style={styles.guest}>Continue as Guest →</Text>
-      </TouchableOpacity>
     </View>
   );
 }

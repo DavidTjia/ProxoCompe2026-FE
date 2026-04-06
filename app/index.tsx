@@ -13,7 +13,7 @@ const AppScreen = () => {
       const user = await getItemAsync("user");
 
       if (user) router.replace("/(tabs)");
-      else router.replace("/(auth)/signin");
+      else router.replace("/welcome");
     }, 2000);
 
     return () => clearTimeout(timer);
