@@ -1,8 +1,8 @@
 import { primaryColor, secondaryColor } from "@/constants/theme";
-import { useCreateRating } from "@/hooks/use-rating";
+import { useCreateRating, useUpdateRating, useUserRatingForReport } from "@/hooks/use-rating";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import React, { forwardRef, useCallback, useMemo, useState } from "react";
+import React, { forwardRef, useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -13,31 +13,52 @@ import {
 
 type Props = {
   reportId: string;
+  userId?: string;
   onSubmitSuccess?: () => void;
 };
 
 const STAR_LABELS = ["Terrible", "Poor", "Okay", "Good", "Excellent"];
 
 const RatingBottomSheetInner = forwardRef<BottomSheet, Props>(
-  ({ reportId, onSubmitSuccess }, ref) => {
+  ({ reportId, userId, onSubmitSuccess }, ref) => {
     const [selectedRating, setSelectedRating] = useState(0);
     const snapPoints = useMemo(() => ["45%"], []);
-    const { mutate: createRating, isPending } = useCreateRating();
+    
+    const { data: userRating, refetch } = useUserRatingForReport(reportId, userId);
+    const { mutate: createRating, isPending: isCreating } = useCreateRating();
+    const { mutate: updateRating, isPending: isUpdating } = useUpdateRating();
+
+    const isPending = isCreating || isUpdating;
+
+    useEffect(() => {
+      if (userRating) {
+        setSelectedRating(userRating.rating_value);
+      } else {
+        setSelectedRating(0);
+      }
+    }, [userRating]);
 
     const handleSubmit = useCallback(() => {
       if (selectedRating === 0) return;
 
-      createRating(
-        { report_id: reportId, rating_value: selectedRating },
-        {
-          onSuccess: () => {
-            setSelectedRating(0);
-            onSubmitSuccess?.();
-            (ref as React.RefObject<BottomSheet>)?.current?.close();
-          },
-        },
-      );
-    }, [selectedRating, reportId, createRating, onSubmitSuccess, ref]);
+      const onSuccess = () => {
+        setSelectedRating(0);
+        onSubmitSuccess?.();
+        (ref as React.RefObject<BottomSheet>)?.current?.close();
+      };
+
+      if (userRating && userRating.id) {
+        updateRating(
+          { id: userRating.id, data: { report_id: reportId, rating_value: selectedRating } },
+          { onSuccess }
+        );
+      } else {
+        createRating(
+          { report_id: reportId, rating_value: selectedRating },
+          { onSuccess }
+        );
+      }
+    }, [selectedRating, reportId, userRating, createRating, updateRating, onSubmitSuccess, ref]);
 
     return (
       <BottomSheet
@@ -47,6 +68,11 @@ const RatingBottomSheetInner = forwardRef<BottomSheet, Props>(
         enablePanDownToClose
         backgroundStyle={styles.sheetBackground}
         handleIndicatorStyle={styles.handleIndicator}
+        onChange={(index) => {
+          if (index >= 0) {
+            refetch();
+          }
+        }}
       >
         <BottomSheetView style={styles.container}>
           {/* Header */}
