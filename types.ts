@@ -75,7 +75,7 @@ export type Rating = {
   id: string;
   report_id: string;
   user_created: string;
-  score: number;
+  rating_value: number;
   date_created: string;
 };
 

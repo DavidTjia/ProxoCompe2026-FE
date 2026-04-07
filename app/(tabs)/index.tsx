@@ -225,7 +225,7 @@ export default function HomeScreen() {
         ref={commentSheetRef}
         bottomInset={0}
       />
-      <RatingBottomSheet reportId={selectedReportId} ref={ratingSheetRef} />
+      <RatingBottomSheet reportId={selectedReportId} ref={ratingSheetRef} userId={user?.id} />
     </ThemedView>
   );
 }

@@ -288,7 +288,7 @@ export default function ReportDetailScreen() {
       </ScrollView>
 
       {/* Bottom Sheets */}
-      <RatingBottomSheet ref={ratingSheetRef} reportId={data?.id as string} />
+      <RatingBottomSheet ref={ratingSheetRef} reportId={data?.id as string} userId={user?.id} />
       <CommentBottomSheet ref={commentSheetRef} reportId={data?.id as string} />
     </ThemedView>
   );
