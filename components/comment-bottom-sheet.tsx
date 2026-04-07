@@ -80,7 +80,6 @@ function CommentItem({ comment }: { comment: Comment }) {
           </Text>
         </View>
         <Text style={styles.commentText}>{comment.content}</Text>
-        <Text style={styles.commentText}>{comment.content}</Text>
       </View>
     </View>
   );
