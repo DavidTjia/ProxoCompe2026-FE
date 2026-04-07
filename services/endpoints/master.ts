@@ -17,6 +17,18 @@ const masterApi = {
       },
     });
   },
+
+  getTopRegion: async () =>
+    apiClient.get<ApiResponse<any>>("items/reports", {
+      params: {
+        // fields: "id,province,pollution_score",
+        limit: 10,
+        groupBy: "province",
+        sort: "-avg.pollution_score",
+        "aggregate[avg]": "pollution_score",
+        "filter[province][_nnull]": true,
+      },
+    }),
 };
 
 export default masterApi;

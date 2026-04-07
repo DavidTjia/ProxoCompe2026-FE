@@ -3,9 +3,13 @@ import { CommunityFeedCard } from "@/components/community-feed-card";
 import { RatingBottomSheet } from "@/components/rating-bottom-sheet";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { RegionData, TopRegionsCard } from "@/components/top-regions-card";
+import { TopRegionsCard } from "@/components/top-regions-card";
 import { primaryColor } from "@/constants/theme";
-import { useInfiniteReports, useReportStats } from "@/hooks/use-report";
+import {
+  useInfiniteReports,
+  useReportStats,
+  useTopRegion,
+} from "@/hooks/use-report";
 import { Report, User } from "@/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import BottomSheet from "@gorhom/bottom-sheet";
@@ -25,14 +29,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// ── Mock Data ──────────────────────────────────────────────
-
-const MOCK_REGIONS: RegionData[] = [
-  { name: "North District", score: 8.2 },
-  { name: "East Riverside", score: 7.4 },
-  { name: "West Industrial", score: 6.8 },
-];
-
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [user, setUser] = useState<User | null>(null);
@@ -40,6 +36,13 @@ export default function HomeScreen() {
   const [selectedReportId, setSelectedReportId] = useState<string>("");
   const commentSheetRef = useRef<BottomSheet>(null);
   const ratingSheetRef = useRef<BottomSheet>(null);
+
+  const {
+    data: topRegion,
+    isLoading: isTopRegionLoading,
+    refetch: topRegionRefetch,
+    error: topRegionError,
+  } = useTopRegion();
 
   const {
     data: reportStats,
@@ -87,6 +90,12 @@ export default function HomeScreen() {
     getUser();
   });
 
+  const handleRefresh = () => {
+    refetch();
+    topRegionRefetch();
+    reportStatsRefetch();
+  };
+
   const avatar = user?.avatar
     ? { uri: `${process.env.EXPO_PUBLIC_BASE_API_URL}/assets/${user.avatar}` }
     : require("@/assets/images/avatar-placeholder.png");
@@ -128,12 +137,13 @@ export default function HomeScreen() {
 
       {/* ── Top 10 Regions ── */}
       <View style={styles.section}>
-        <TopRegionsCard
-          regions={MOCK_REGIONS}
-          onViewFullAnalysis={() => {
-            console.log("View full analysis");
-          }}
-        />
+        {isTopRegionLoading ? (
+          <ActivityIndicator size="small" color={primaryColor} />
+        ) : (
+          <TopRegionsCard
+            regions={topRegion}
+          />
+        )}
       </View>
 
       {/* ── Community Feed Header ── */}
@@ -172,7 +182,6 @@ export default function HomeScreen() {
           setSelectedReportId(r.id);
           ratingSheetRef.current?.snapToIndex(0);
         }}
-        onReportPress={(r) => console.log("Report:", r.id)}
       />
     </View>
   );
@@ -198,7 +207,7 @@ export default function HomeScreen() {
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
-            onRefresh={refetch}
+            onRefresh={handleRefresh}
             tintColor={primaryColor}
             colors={[primaryColor]}
           />

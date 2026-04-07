@@ -1,12 +1,18 @@
 import { primaryColor } from "@/constants/theme";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import React from "react";
+import { MaterialIcons } from "@expo/vector-icons";
+import React, { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  withTiming,
+} from "react-native-reanimated";
 import { ThemedText } from "./themed-text";
 
 export type RegionData = {
-  name: string;
-  score: number;
+  province: string;
+  avg: {
+    pollution_score: number;
+  };
 };
 
 type Props = {
@@ -24,48 +30,110 @@ function getBarWidth(score: number, maxScore: number): number {
   return Math.max(10, (score / maxScore) * 100);
 }
 
+function RegionRow({
+  region,
+  index,
+  maxScore,
+}: {
+  region: RegionData;
+  index: number;
+  maxScore: number;
+}) {
+  return (
+    <View style={styles.regionRow}>
+      <View style={styles.regionInfo}>
+        <ThemedText style={styles.regionName}>{region.province}</ThemedText>
+        <ThemedText style={styles.regionScore}>
+          PS {Number(region.avg.pollution_score).toFixed(1)}
+        </ThemedText>
+      </View>
+      <View style={styles.barTrack}>
+        <View
+          style={[
+            styles.barFill,
+            {
+              width: `${getBarWidth(region.avg.pollution_score, maxScore)}%`,
+              backgroundColor: getBarColor(index),
+            },
+          ]}
+        />
+      </View>
+    </View>
+  );
+}
+
 export function TopRegionsCard({ regions, onViewFullAnalysis }: Props) {
-  const maxScore = Math.max(...regions.map((r) => r.score), 1);
-  const displayRegions = regions.slice(0, 3);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [extraHeight, setExtraHeight] = useState(0);
+
+  const maxScore = Math.max(...regions.map((r) => r.avg.pollution_score), 1);
+
+  const top3Regions = regions.slice(0, 3);
+  const restRegions = regions.slice(3, 10);
+
+  const accordionStyle = useAnimatedStyle(() => {
+    return {
+      height: withTiming(isExpanded ? extraHeight : 0, { duration: 300 }),
+    };
+  });
 
   return (
     <View style={styles.card}>
       {/* Header */}
       <View style={styles.header}>
         <ThemedText style={styles.title}>Top 10 Regions</ThemedText>
-        <Pressable onPress={onViewFullAnalysis}>
-          <MaterialIcons name="north-east" size={18} color={primaryColor} />
-        </Pressable>
       </View>
 
       {/* Region rows */}
-      {displayRegions.map((region, index) => (
-        <View key={region.name} style={styles.regionRow}>
-          <View style={styles.regionInfo}>
-            <ThemedText style={styles.regionName}>{region.name}</ThemedText>
-            <ThemedText style={styles.regionScore}>
-              PS {region.score.toFixed(1)}
-            </ThemedText>
-          </View>
-          <View style={styles.barTrack}>
-            <View
-              style={[
-                styles.barFill,
-                {
-                  width: `${getBarWidth(region.score, maxScore)}%`,
-                  backgroundColor: getBarColor(index),
-                },
-              ]}
+      {regions.length === 0 ? (
+        <ThemedText style={styles.emptyText}>No Data Available Yet</ThemedText>
+      ) : (
+        <View>
+          {top3Regions.map((region, index) => (
+            <RegionRow
+              key={region.province}
+              region={region}
+              index={index}
+              maxScore={maxScore}
             />
-          </View>
-        </View>
-      ))}
+          ))}
 
-      {/* View Full Analysis */}
-      <Pressable style={styles.viewAllRow} onPress={onViewFullAnalysis}>
-        <ThemedText style={styles.viewAllText}>View Full Analysis</ThemedText>
-        <MaterialIcons name="chevron-right" size={18} color={primaryColor} />
-      </Pressable>
+          <Animated.View style={[accordionStyle, { overflow: "hidden" }]}>
+            <View
+              style={{ position: "absolute", top: 0, left: 0, right: 0 }}
+              onLayout={(e) => {
+                const h = e.nativeEvent.layout.height;
+                if (h > 0 && extraHeight !== h) setExtraHeight(h);
+              }}
+            >
+              {restRegions.map((region, index) => (
+                <RegionRow
+                  key={region.province}
+                  region={region}
+                  index={index + 3}
+                  maxScore={maxScore}
+                />
+              ))}
+            </View>
+          </Animated.View>
+        </View>
+      )}
+
+      {regions.length > 3 && (
+        <Pressable
+          style={styles.viewAllRow}
+          onPress={() => setIsExpanded(!isExpanded)}
+        >
+          <ThemedText style={styles.viewAllText}>
+            View {isExpanded ? "Less" : "More"}
+          </ThemedText>
+          <MaterialIcons
+            name={isExpanded ? "expand-less" : "expand-more"}
+            size={20}
+            color={primaryColor}
+          />
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -136,5 +204,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: primaryColor,
+  },
+
+  emptyText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+    textAlign: "center",
   },
 });

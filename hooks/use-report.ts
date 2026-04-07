@@ -105,7 +105,7 @@ export const useCreateReport = () => {
   });
 };
 
-//delete report
+// Delete a report
 export const useDeleteReport = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -118,3 +118,12 @@ export const useDeleteReport = () => {
     },
   });
 };
+
+export const useTopRegion = () =>
+  useQuery({
+    queryKey: ["topRegion"],
+    queryFn: async () => {
+      const res = await masterApi.getTopRegion();
+      return res.data.data;
+    },
+  });
