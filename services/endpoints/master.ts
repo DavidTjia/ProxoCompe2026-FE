@@ -26,7 +26,9 @@ const masterApi = {
         groupBy: "province",
         sort: "-avg.pollution_score",
         "aggregate[avg]": "pollution_score",
+        "aggregate[count]": "id",
         "filter[province][_nnull]": true,
+        "filter[privacy][_eq]": "PUBLIC",
       },
     }),
 };

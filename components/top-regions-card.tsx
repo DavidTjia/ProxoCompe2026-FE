@@ -1,7 +1,7 @@
 import { primaryColor } from "@/constants/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Alert, Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   withTiming,
@@ -81,7 +81,19 @@ export function TopRegionsCard({ regions, onViewFullAnalysis }: Props) {
     <View style={styles.card}>
       {/* Header */}
       <View style={styles.header}>
-        <ThemedText style={styles.title}>Top 10 Regions</ThemedText>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <ThemedText style={styles.title}>Top 10 Regions</ThemedText>
+          <Pressable
+            onPress={() =>
+              Alert.alert(
+                "Top Regions",
+                "This is a list of the most frequently reported areas, sorted by severity.",
+              )
+            }
+          >
+            <MaterialIcons name="info-outline" size={20} color="#687076" />
+          </Pressable>
+        </View>
       </View>
 
       {/* Region rows */}
