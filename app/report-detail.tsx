@@ -1,6 +1,7 @@
 import { CommentBottomSheet } from "@/components/comment-bottom-sheet";
 import HeaderCst from "@/components/header-cst";
 import { RatingBottomSheet } from "@/components/rating-bottom-sheet";
+import { ReportPostBottomSheet } from "@/components/report-post-bottom-sheet";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -38,6 +39,7 @@ export default function ReportDetailScreen() {
 
   const ratingSheetRef = useRef<BottomSheet>(null);
   const commentSheetRef = useRef<BottomSheet>(null);
+  const reportPostSheetRef = useRef<BottomSheet>(null);
 
   const pollutionStatus = getPollutionStatus(
     Number(data?.pollution_score || 0),
@@ -106,6 +108,10 @@ export default function ReportDetailScreen() {
 
   const handleOpenComments = useCallback(() => {
     commentSheetRef.current?.snapToIndex(0);
+  }, []);
+
+  const handleOpenReportPost = useCallback(() => {
+    reportPostSheetRef.current?.snapToIndex(0);
   }, []);
 
   if (isLoading || !data) {
@@ -274,7 +280,10 @@ export default function ReportDetailScreen() {
               <ThemedText>Comment</ThemedText>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionBtn}>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={handleOpenReportPost}
+            >
               <IconSymbol
                 iconSet="material-community"
                 name="exclamationmark.circle"
@@ -290,6 +299,7 @@ export default function ReportDetailScreen() {
       {/* Bottom Sheets */}
       <RatingBottomSheet ref={ratingSheetRef} reportId={data?.id as string} userId={user?.id} />
       <CommentBottomSheet ref={commentSheetRef} reportId={data?.id as string} />
+      <ReportPostBottomSheet ref={reportPostSheetRef} reportId={data?.id as string} />
     </ThemedView>
   );
 }

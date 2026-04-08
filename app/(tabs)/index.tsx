@@ -1,6 +1,7 @@
 import { CommentBottomSheet } from "@/components/comment-bottom-sheet";
 import { CommunityFeedCard } from "@/components/community-feed-card";
 import { RatingBottomSheet } from "@/components/rating-bottom-sheet";
+import { ReportPostBottomSheet } from "@/components/report-post-bottom-sheet";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { TopRegionsCard } from "@/components/top-regions-card";
@@ -36,6 +37,7 @@ export default function HomeScreen() {
   const [selectedReportId, setSelectedReportId] = useState<string>("");
   const commentSheetRef = useRef<BottomSheet>(null);
   const ratingSheetRef = useRef<BottomSheet>(null);
+  const reportPostSheetRef = useRef<BottomSheet>(null);
 
   const {
     data: topRegion,
@@ -182,6 +184,10 @@ export default function HomeScreen() {
           setSelectedReportId(r.id);
           ratingSheetRef.current?.snapToIndex(0);
         }}
+        onReportPress={(r) => {
+          setSelectedReportId(r.id);
+          reportPostSheetRef.current?.snapToIndex(0);
+        }}
       />
     </View>
   );
@@ -226,6 +232,7 @@ export default function HomeScreen() {
         bottomInset={0}
       />
       <RatingBottomSheet reportId={selectedReportId} ref={ratingSheetRef} userId={user?.id} />
+      <ReportPostBottomSheet reportId={selectedReportId} ref={reportPostSheetRef} />
     </ThemedView>
   );
 }
