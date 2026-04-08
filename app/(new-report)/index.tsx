@@ -6,7 +6,7 @@ import { ThemedText } from "@/components/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors, primaryColor } from "@/constants/theme";
 import { ReportForm, reportSchema } from "@/forms";
-import { getCurrentLocation } from "@/utils/current-location";
+import { useLocationStore } from "@/hooks/use-location-store";
 import { analyzePollution } from "@/utils/gemini-ai";
 import { openCamera, openGallery } from "@/utils/image-picker";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
@@ -55,6 +55,9 @@ export default function NewReportScreen() {
       description: "",
       latitude: 0,
       longitude: 0,
+      district: null,
+      city: null,
+      province: null,
     },
   });
 
@@ -62,34 +65,26 @@ export default function NewReportScreen() {
   const latitude = watch("latitude");
   const longitude = watch("longitude");
 
+  const { location, status, fetchLocation } = useLocationStore();
+
   useEffect(() => {
-    async function loadLocation() {
-      try {
-        const location = await getCurrentLocation();
+    if (status === "idle") {
+      fetchLocation();
+    }
+  }, [status]);
 
-        const lat = location.coords.latitude;
-        const lng = location.coords.longitude;
-
-        setValue("latitude", lat, { shouldValidate: true });
-        setValue("longitude", lng, { shouldValidate: true });
-
-        await updateAddress(lat, lng);
-      } catch (err) {
-        console.log("error get location", err);
+  useEffect(() => {
+    if (status === "success" && location) {
+      if (latitude === 0 && longitude === 0) {
+        setValue("latitude", location.latitude, { shouldValidate: true });
+        setValue("longitude", location.longitude, { shouldValidate: true });
+        setValue("district", location.district);
+        setValue("city", location.city);
+        setValue("province", location.province);
+        setLocationName(location.address);
       }
     }
-
-    loadLocation();
-  }, []);
-
-  async function updateAddress(lat: number, lng: number) {
-    const address = await Location.reverseGeocodeAsync({
-      latitude: lat,
-      longitude: lng,
-    });
-
-    setLocationName(address?.[0]?.formattedAddress || "");
-  }
+  }, [status, location]);
 
   const handleCamera = async () => {
     const res = await openCamera();
@@ -259,12 +254,24 @@ export default function NewReportScreen() {
             </View>
 
             <View style={{ flex: 1 }}>
-              <ThemedText numberOfLines={2}>
-                {`📍 ${locationName}` || "Location unavailable"}
-              </ThemedText>
+              {status === "loading" ? (
+                <ThemedText>Locating...</ThemedText>
+              ) : status === "error" ? (
+                <View>
+                  <ThemedText style={{ color: "red" }}>Location Error</ThemedText>
+                </View>
+              ) : (
+                <ThemedText numberOfLines={2}>
+                  {`📍 ${locationName}` || "Location unavailable"}
+                </ThemedText>
+              )}
             </View>
 
-            <ButtonCst label="Change" onPress={() => setShowMapPicker(true)} />
+            {status === "error" ? (
+              <ButtonCst label="Retry" onPress={fetchLocation} />
+            ) : (
+              <ButtonCst label="Change" onPress={() => setShowMapPicker(true)} />
+            )}
           </View>
 
           {(errors.latitude || errors.longitude) && (
@@ -314,9 +321,12 @@ export default function NewReportScreen() {
         <Modal animationType="slide">
           <SafeAreaView style={{ flex: 1 }}>
             <LocationPicker
-              onSelect={({ latitude, longitude, address }) => {
+              onSelect={({ latitude, longitude, address, district, city, province }) => {
                 setValue("latitude", latitude, { shouldValidate: true });
                 setValue("longitude", longitude, { shouldValidate: true });
+                setValue("district", district);
+                setValue("city", city);
+                setValue("province", province);
 
                 setLocationName(address);
                 setShowMapPicker(false);

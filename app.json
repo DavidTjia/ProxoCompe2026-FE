@@ -28,11 +28,7 @@
       ],
       "googleServicesFile": "./google-services.json",
       "package": "com.anonymous.tilikkota",
-      "config": {
-        "googleMaps": {
-          "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
-        }
-      }
+      "config": {}
     },
     "web": {
       "output": "static",

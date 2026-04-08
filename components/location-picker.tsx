@@ -17,6 +17,9 @@ type Props = {
     latitude: number;
     longitude: number;
     address: string;
+    district: string | null;
+    city: string | null;
+    province: string | null;
   }) => void;
 };
 
@@ -29,6 +32,9 @@ export default function LocationPicker({ onSelect }: Props) {
   });
 
   const [address, setAddress] = useState("");
+  const [district, setDistrict] = useState<string | null>(null);
+  const [city, setCity] = useState<string | null>(null);
+  const [province, setProvince] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -56,10 +62,16 @@ export default function LocationPicker({ onSelect }: Props) {
       if (res.length > 0) {
         const addr = `${res[0].street || ""}, ${res[0].city || ""}`;
         setAddress(addr);
+        setDistrict(res[0].district || null);
+        setCity(res[0].subregion || res[0].city || null);
+        setProvince(res[0].region || null);
       }
     } catch (err) {
       console.log("reverseGeocode error:", err);
       setAddress("Failed to get address");
+      setDistrict(null);
+      setCity(null);
+      setProvince(null);
     }
   };
 
@@ -219,6 +231,9 @@ export default function LocationPicker({ onSelect }: Props) {
               latitude: region.latitude,
               longitude: region.longitude,
               address,
+              district,
+              city,
+              province,
             })
           }
         >

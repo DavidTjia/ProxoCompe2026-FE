@@ -45,6 +45,9 @@ export type CreateReportForm = {
   description: string;
   latitude: number;
   longitude: number;
+  district?: string | null;
+  city?: string | null;
+  province?: string | null;
   pollution_score: number;
   ai_summary: string;
   privacy?: "PUBLIC" | "ONLY_ME";

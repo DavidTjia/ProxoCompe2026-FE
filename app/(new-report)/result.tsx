@@ -29,6 +29,9 @@ type Params = {
   description: string;
   latitude: string;
   longitude: string;
+  district?: string;
+  city?: string;
+  province?: string;
   aiResponse: string;
 };
 
@@ -47,6 +50,9 @@ const ReportResultScreen = () => {
         description: params.description,
         latitude: Number(params.latitude),
         longitude: Number(params.longitude),
+        district: params.district || null,
+        city: params.city || null,
+        province: params.province || null,
         pollution_score: aiResponse.pollutionScore,
         ai_summary: aiResponse.summary,
         privacy: mode,
