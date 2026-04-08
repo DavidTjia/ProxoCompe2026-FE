@@ -32,7 +32,7 @@ const processQueue = (error: any, token: string | null = null) => {
 
 // Request interceptor
 apiClient.interceptors.request.use(async (config) => {
-  if (config.url === "auth/refresh") {
+  if (config.url?.startsWith("auth")) {
     return config;
   }
 

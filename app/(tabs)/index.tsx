@@ -229,7 +229,6 @@ export default function HomeScreen() {
       <CommentBottomSheet
         reportId={selectedReportId}
         ref={commentSheetRef}
-        bottomInset={0}
       />
       <RatingBottomSheet reportId={selectedReportId} ref={ratingSheetRef} userId={user?.id} />
       <ReportPostBottomSheet reportId={selectedReportId} ref={reportPostSheetRef} />
